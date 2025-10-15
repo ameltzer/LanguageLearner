@@ -2,11 +2,23 @@ package com.ameltz.languagelearner.data.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import java.util.UUID
 
-@Entity
+@Entity(
+    foreignKeys = [ForeignKey(
+        entity = Card::class,
+        parentColumns = ["uuid"],
+        childColumns = ["cardId"],
+        onDelete = ForeignKey.CASCADE
+    ), ForeignKey(
+        entity = Deck::class,
+        parentColumns = ["uuid"],
+        childColumns = ["deckId"],
+    )]
+)
 data class CardInDeck(
     @PrimaryKey val uuid: UUID,
     var learnLevel: Int,

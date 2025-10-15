@@ -106,4 +106,5 @@ dependencies {
 
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 }

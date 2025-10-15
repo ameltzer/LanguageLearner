@@ -30,7 +30,7 @@ object DatabaseModule {
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context.applicationContext, AppDatabase::class.java,
-            "AppDatabase").build();
+            "AppDatabase").allowMainThreadQueries().build();
     }
 
     @Provides
