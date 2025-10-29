@@ -43,7 +43,15 @@ android {
         compose = true
     }
 }
-
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.uuid.ExperimentalUuidApi",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"
+        )
+    }
+}
 dependencies {
 
     implementation(libs.androidx.core.ktx)

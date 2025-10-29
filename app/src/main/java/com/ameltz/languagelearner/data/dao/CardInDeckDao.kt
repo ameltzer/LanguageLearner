@@ -6,18 +6,18 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.ameltz.languagelearner.data.entity.CardInDeck
-import java.util.UUID
-import javax.inject.Inject
+import kotlin.uuid.Uuid
 
 @Dao
-abstract class CardInDeckDao @Inject constructor(val cardDao: CardDao){
+abstract class CardInDeckDao {
 
-    @Insert
-    abstract fun insertAll(cardInDecks:List<CardInDeck>)
+    @Upsert
+    abstract fun upsertAll(cardInDecks:List<CardInDeck>)
 
     @Query("SELECT * FROM CardInDeck cd INNER JOIN card ON card.uuid = cd.cardId WHERE card.uuid = :cardId AND cd.deckId = :deckId")
-    abstract fun getSpecificCardInDeck(cardId: UUID, deckId: UUID): CardInDeck?
+    abstract fun getSpecificCardInDeck(cardId: Uuid, deckId: Uuid): CardInDeck?
 
     @Update
     abstract fun update(cardInDeck: CardInDeck)
@@ -29,10 +29,10 @@ abstract class CardInDeckDao @Inject constructor(val cardDao: CardDao){
     abstract fun insertCardInDeck(cardInDeck: CardInDeck)
 
     @Query("SELECT * FROM CardInDeck WHERE cardId = :cardId")
-    abstract fun getAll(cardId: UUID): List<CardInDeck>
+    abstract fun getAll(cardId: Uuid): List<CardInDeck>
 
     @Transaction
-    fun deleteCardTransactionally(cardInDeck: CardInDeck) {
+    open fun deleteCardTransactionally(cardInDeck: CardInDeck, cardDao: CardDao) {
         delete(cardInDeck)
         val card = cardDao.getCard(cardInDeck.cardId)
         if (getAll(cardInDeck.cardId).isEmpty() && card != null) {

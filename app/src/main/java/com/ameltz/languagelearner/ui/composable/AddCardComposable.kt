@@ -1,4 +1,4 @@
-package com.ameltz.languagelearner.ui
+package com.ameltz.languagelearner.ui.composable
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,24 +21,34 @@ import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.Deck
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
-import java.util.UUID
+import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
+import kotlin.uuid.Uuid
 
-data class CheckboxItem(val label: String, var isSelected: Boolean, val deckId: UUID)
+data class CheckboxItem (val label: String, var isSelected: Boolean, val deckId: Uuid)
 
 
 @Composable
-fun AddCard(decks: List<Deck>, addCardViewModel: AddCardViewModel) {
+fun AddCardComposable(addCardViewModel: AddCardViewModel,
+                      back: () -> Unit,
+                      deckId: Uuid? = null,
+                      cardId: Uuid? = null) {
+    val decks = addCardViewModel.getAllDecks().map { deck -> deck.deck }
+
+    val card = addCardViewModel.getCard(cardId)
+
     var front by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(""))
+        mutableStateOf(TextFieldValue(card?.card?.front ?: ""))
     }
 
     var back by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(""))
+        mutableStateOf(TextFieldValue(card?.card?.back ?: ""))
     }
 
     val decksSelected = remember {
         mutableStateListOf(
-            *decks.map { deck ->  CheckboxItem(deck.name, isSelected = false, deck.uuid) }.toTypedArray()
+            *decks.map { deck ->  CheckboxItem(deck.name,
+                isSelected = (deckId != null && deckId == deck.uuid) || (card?.instancesOfCard?.any { cardInDeck -> cardInDeck.deckId == deck.uuid } ?: false),
+                deck.uuid) }.toTypedArray()
         )
     }
 
@@ -76,9 +86,10 @@ fun AddCard(decks: List<Deck>, addCardViewModel: AddCardViewModel) {
                 }
             }
             Button(onClick = {
-                val card = Card(UUID.randomUUID(), front.text, back.text)
-                val cardInDecks = decks.map { deck -> CardInDeck(UUID.randomUUID(), 0, 0, card.uuid, deck.uuid) }
+                val card = Card(Uuid.random(), front.text, back.text)
+                val cardInDecks = decks.map { deck -> CardInDeck(Uuid.random(), 0, 0, card.uuid, deck.uuid) }
                 addCardViewModel.addCard(cardInDecks, card)
+                back()
             }) {
                 Text(text = "Add Card to Decks")
             }

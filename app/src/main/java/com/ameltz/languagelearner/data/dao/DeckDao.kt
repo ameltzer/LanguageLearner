@@ -8,15 +8,13 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.Deck
-import com.ameltz.languagelearner.data.entity.DeckAndDeckSettingsRelation
-import java.util.UUID
-import javax.inject.Inject
+import kotlin.uuid.Uuid
 
 @Dao
-abstract class DeckDao @Inject constructor(val cardInDeckDao: CardInDeckDao){
+abstract class DeckDao {
 
     @Query("SELECT * FROM deck WHERE uuid = :deckId")
-    abstract fun get(deckId: UUID): CardInDeckAndDeckRelation?
+    abstract fun get(deckId: Uuid): CardInDeckAndDeckRelation?
 
     @Update
     abstract fun update(deck: Deck)
@@ -31,9 +29,9 @@ abstract class DeckDao @Inject constructor(val cardInDeckDao: CardInDeckDao){
     abstract fun getAll(): List<CardInDeckAndDeckRelation>
 
     @Transaction
-    fun deleteDeckTransactionally(deckAndCards: CardInDeckAndDeckRelation) {
+    open fun deleteDeckTransactionally(deckAndCards: CardInDeckAndDeckRelation, cardInDeckDao: CardInDeckDao, cardDao: CardDao) {
         delete(deckAndCards.deck)
-        deckAndCards.cardsInDeck.forEach { cardInDeck -> cardInDeckDao.deleteCardTransactionally(cardInDeck) }
+        deckAndCards.cardsInDeck.forEach { cardInDeck -> cardInDeckDao.deleteCardTransactionally(cardInDeck.cardInDeck, cardDao) }
     }
 
 

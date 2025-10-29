@@ -3,6 +3,8 @@ package com.ameltz.languagelearner.depinjection
 import android.content.Context
 import androidx.room.Room
 import com.ameltz.languagelearner.data.AppDatabase
+import com.ameltz.languagelearner.data.dao.CardDao
+import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.repository.DefaultRepository
 import com.ameltz.languagelearner.data.repository.Repository
 import com.ameltz.languagelearner.data.dao.DeckDao
@@ -35,5 +37,12 @@ object DatabaseModule {
 
     @Provides
     fun provideDeckDao(database:AppDatabase): DeckDao = database.deckDAO()
+
+    @Provides
+    fun provideCardDao(database: AppDatabase): CardDao = database.cardDAO()
+
+    @Provides
+    fun provideCardInDeckDao(database: AppDatabase): CardInDeckDao = database.cardInDeckDao()
+
 
 }

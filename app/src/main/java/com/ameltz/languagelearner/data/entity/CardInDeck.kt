@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 @Entity(
     foreignKeys = [ForeignKey(
@@ -20,22 +20,22 @@ import java.util.UUID
     )]
 )
 data class CardInDeck(
-    @PrimaryKey val uuid: UUID,
+    @PrimaryKey val uuid: Uuid,
     var learnLevel: Int,
     var numberOfTimesShown: Int,
-    val cardId: UUID,
-    val deckId: UUID
+    val cardId: Uuid,
+    val deckId: Uuid
 )
 
 data class CardInDeckAndDeckRelation(
     @Embedded val deck: Deck,
     @Relation(
+        entity = CardInDeck::class,
         parentColumn="uuid",
         entityColumn="deckId"
     )
-    val cardsInDeck: List<CardInDeck>
+    val cardsInDeck: List<CardInDeckWithCard>
 )
-
 data class CardInDeckAndCardRelation(
     @Embedded val card: Card,
     @Relation(
@@ -43,4 +43,12 @@ data class CardInDeckAndCardRelation(
         entityColumn = "cardId"
     )
     val instancesOfCard: List<CardInDeck>
+)
+data class CardInDeckWithCard(
+    @Embedded val cardInDeck: CardInDeck,
+    @Relation(
+        parentColumn = "cardId",
+        entityColumn = "uuid"
+    )
+    val card: Card
 )

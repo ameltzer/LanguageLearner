@@ -1,12 +1,10 @@
 package com.ameltz.languagelearner.data.repository
 
-import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
-import com.ameltz.languagelearner.data.entity.Deck
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 interface Repository {
 
@@ -18,19 +16,22 @@ interface Repository {
 
     fun deleteDeck(deck:CardInDeckAndDeckRelation)
 
-    fun getDeck(deckId: UUID): CardInDeckAndDeckRelation?
+    fun getDeck(deckId: Uuid): CardInDeckAndDeckRelation?
 
-    fun insertCard(card: CardInDeckAndCardRelation)
+    fun upsertCard(card: Card)
 
     fun doesCardExist(card: CardInDeckAndCardRelation): Boolean
 
-    fun getCard(cardId: UUID): Card?
+    fun getCard(cardId: Uuid): Card?
+
+    fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation?
+    fun getAllCards(): List<Card>
 
     fun updateCard(card: CardInDeckAndCardRelation)
 
     fun deleteCard(card: CardInDeckAndCardRelation)
 
-    fun insertAllCardInDecks(cardInDecks: List<CardInDeck>)
+    fun upsertAllCardInDecks(cardInDecks: List<CardInDeck>)
 
     fun doesCardInDeckExist(cardInDeck: CardInDeck): Boolean
 

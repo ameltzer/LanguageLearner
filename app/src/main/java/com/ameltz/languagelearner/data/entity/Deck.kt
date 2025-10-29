@@ -5,16 +5,16 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.ameltz.languagelearner.ui.model.HomePageDeckModel
-import java.util.UUID
+import kotlin.uuid.Uuid
 
 @Entity
-class Deck(
-    @PrimaryKey val uuid: UUID,
+class Deck (
+    @PrimaryKey val uuid: Uuid,
     val name: String,
-    var deckSettingsId: UUID
+    var deckSettingsId: Uuid
 ) {
-    fun toHomePageDeckSummary(newCardsDue:Int = 0, reviewCardsDue:Int = 0, errorCardsDue:Int = 0): HomePageDeckModel {
-        return HomePageDeckModel(name, newCardsDue, reviewCardsDue, errorCardsDue)
+    fun toHomePageDeckSummary(toDeckManagement: () -> Unit, newCardsDue:Int = 0, reviewCardsDue:Int = 0, errorCardsDue:Int = 0): HomePageDeckModel {
+        return HomePageDeckModel(name, newCardsDue, reviewCardsDue, errorCardsDue, toDeckManagement)
     }
 }
 

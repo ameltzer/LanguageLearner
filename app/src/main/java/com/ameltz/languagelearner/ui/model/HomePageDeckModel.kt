@@ -1,6 +1,9 @@
 package com.ameltz.languagelearner.ui.model
 
-class HomePageDeckModel(private val deckName: String, private var newCardsDue: Int, private var reviewCardsDue: Int, private var errorCardsDue: Int) {
+
+class HomePageDeckModel(private val deckName: String, private var newCardsDue: Int,
+                        private var reviewCardsDue: Int, private var errorCardsDue: Int,
+                        private val toDeckManagement: () -> Unit) {
 
     fun printName() {
         println(this.deckName)
@@ -19,7 +22,11 @@ class HomePageDeckModel(private val deckName: String, private var newCardsDue: I
     }
 
     fun getErrorCardsDue(): Int {
-        return this.errorCardsDue;
+        return this.errorCardsDue
+    }
+
+    fun getToDeckManagement(): () -> Unit {
+        return this.toDeckManagement
     }
 
 
