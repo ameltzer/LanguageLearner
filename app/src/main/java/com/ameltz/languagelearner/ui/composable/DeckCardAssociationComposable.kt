@@ -3,8 +3,6 @@ package com.ameltz.languagelearner.ui.composable
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +28,17 @@ fun AddCardsToDeck(
     // Mock query for list of strings
     LaunchedEffect(deckId) {
         val deck = addCardsToDeckViewModel.getDeck(deckId)
-        items = addCardsToDeckViewModel.getCardsNotInDeck(deck)
+        items = addCardsToDeckViewModel.getAllCards()
+        if (deck != null) {
+            val cardInDeck = deck.cardsInDeck.map { it.card.uuid }
+            items.forEach { card ->
+
+                    if (cardInDeck.contains(card.uuid)) {
+                        selectedItems = selectedItems + card
+                    }
+
+            }
+        }
         isLoading = false
         displayName = deck?.deck?.name ?: ""
     }
@@ -65,13 +73,11 @@ fun AddCardsToDeck(
                 CircularProgressIndicator()
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(items) { item ->
+            Column {
+                Button(onClick = {back()}) {
+                    Text(text = "Go back")
+                }
+                items.forEach { item ->
                     SelectableRow(
                         text = item.display(),
                         isSelected = selectedItems.contains(item),
@@ -91,6 +97,8 @@ fun AddCardsToDeck(
         Button(
             onClick = {
                 addCardsToDeckViewModel.addCardsToDeck(deckId, selectedItems.map { it.uuid })
+                val cardsToRemove = items.filter { !selectedItems.contains(it) }.map { it.uuid  }
+                addCardsToDeckViewModel.removeCardsFromDeck(deckId, cardsToRemove)
             },
             modifier = Modifier
                 .fillMaxWidth()

@@ -27,6 +27,9 @@ interface CardDao {
     @Delete
     fun delete(card: Card)
 
+    @Query("DELETE FROM Card WHERE uuid = :cardId")
+    fun delete(cardId: Uuid)
+
     @Upsert
     fun upsertCard(card: Card)
 

@@ -14,8 +14,17 @@ import kotlin.uuid.Uuid
 class AddCardViewModel @Inject constructor(val repository: Repository) : ViewModel() {
 
     fun addCard(cardInDecks: List<CardInDeck>, card: Card) {
-        this.repository.upsertCard(card)
-        this.repository.upsertAllCardInDecks(cardInDecks);
+
+        val cardInDB = this.repository.upsertCard(card)
+        val toInsert = cardInDecks.map { cardInDeck ->  CardInDeck(
+            cardInDeck.uuid,
+            cardInDeck.learnLevel,
+            cardInDeck.numberOfTimesShown,
+            cardInDB.uuid,
+            cardInDeck.deckId
+            ) }
+        this.repository.upsertAllCardInDecks(toInsert);
+
     }
 
     fun getAllDecks(): List<CardInDeckAndDeckRelation> {
@@ -27,6 +36,14 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
             return null
         }
         return this.repository.getCardWithDecks(cardId)
+    }
+
+    fun deleteCard(cardId: Uuid) {
+        this.repository.deleteCard(cardId)
+    }
+
+    fun deleteCardInDeck(cardId: Uuid, deckId: Uuid) {
+        this.repository.deleteCardInDeck(cardId, deckId)
     }
 
 }

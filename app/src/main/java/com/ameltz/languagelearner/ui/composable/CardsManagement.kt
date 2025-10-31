@@ -12,15 +12,20 @@ import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
 import kotlin.uuid.Uuid
 
 @Composable
-fun CardManagement(cardManagementViewModel: CardManagementViewModel, back: () -> Unit,
-                   toCard: (cardId: Uuid) -> Unit) {
+fun CardsManagement(cardManagementViewModel: CardManagementViewModel, back: () -> Unit,
+                    toCard: (cardId: Uuid) -> Unit, toAddCard: () -> Unit) {
 
     val cards = cardManagementViewModel.getAllCards()
 
     LanguageLearnerTheme {
         Column {
-            Button(onClick = { back() }) {
-                Text("Back")
+            Row {
+                Button(onClick = { toAddCard() }) {
+                    Text("Create Card")
+                }
+                Button(onClick = { back() }) {
+                    Text("Back")
+                }
             }
             cards.forEach { card ->
                 Row(modifier = Modifier.clickable(onClick = { toCard(card.uuid) })) {

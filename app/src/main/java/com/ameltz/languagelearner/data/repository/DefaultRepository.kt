@@ -7,6 +7,7 @@ import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
+import com.ameltz.languagelearner.data.entity.Deck
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
@@ -29,6 +30,10 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         deckDao.update(deck.deck)
     }
 
+    override fun updateDeck(deck: Deck) {
+        deckDao.update(deck)
+    }
+
     override fun deleteDeck(deck: CardInDeckAndDeckRelation) {
         deckDao.deleteDeckTransactionally(deck, cardInDecksDao, cardDao)
     }
@@ -38,8 +43,13 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     }
 
     // Card operations
-    override fun upsertCard(card: Card) {
+    override fun upsertCard(card: Card): Card {
+        val existingCard = this.cardDao.getCard(card.front, card.back)
+        if(existingCard != null) {
+            return existingCard;
+        }
         cardDao.upsertCard(card)
+        return card
     }
 
     override fun doesCardExist(card: CardInDeckAndCardRelation): Boolean {
@@ -66,9 +76,18 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         cardDao.delete(card.card)
     }
 
+    override fun deleteCard(cardId: Uuid) {
+        val card = cardDao.getCardWithDeck(cardId)
+        card?.instancesOfCard?.forEach { this.deleteCardinDeck(it) }
+        cardDao.delete(cardId)
+    }
+
+
     // Card in Deck operations
     override fun upsertAllCardInDecks(cardInDecks: List<CardInDeck>) {
-        cardInDecksDao.upsertAll(cardInDecks.filter { cardInDeck ->  doesCardInDeckExist(cardInDeck) })
+        val cardInDeckToAdd = cardInDecks.filter { cardInDeck -> !doesCardInDeckExist(cardInDeck) }
+
+        cardInDecksDao.upsertAll(cardInDecks.filter { cardInDeck ->  !doesCardInDeckExist(cardInDeck) })
     }
 
     override fun doesCardInDeckExist(cardInDeck: CardInDeck): Boolean {
@@ -81,6 +100,14 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
 
     override fun deleteCardinDeck(cardInDeck: CardInDeck) {
         cardInDecksDao.deleteCardTransactionally(cardInDeck, cardDao)
+    }
+
+    override fun deleteCardInDeck(cardId: Uuid, deckId: Uuid) {
+        val cardInDeck = cardInDecksDao.getSpecificCardInDeck(cardId, deckId)
+        if (cardInDeck == null) {
+            return
+        }
+        this.deleteCardinDeck(cardInDeck)
     }
 
     override fun insertCardInDeck(cardInDeck: CardInDeck) {

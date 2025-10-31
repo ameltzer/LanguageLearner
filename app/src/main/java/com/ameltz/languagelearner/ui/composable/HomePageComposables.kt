@@ -53,7 +53,7 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit) {
             Button(onClick = {
                 toCardManagement()
             }, modifier = Modifier.padding(Dp(6f))) {
-                Text("ManageCards")
+                Text("Manage Cards")
             }
         }
     }

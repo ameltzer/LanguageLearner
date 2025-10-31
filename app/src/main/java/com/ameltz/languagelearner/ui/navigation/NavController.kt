@@ -9,10 +9,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.ameltz.languagelearner.ui.composable.AddCardComposable
+import com.ameltz.languagelearner.ui.composable.CardManagementComposable
 import com.ameltz.languagelearner.ui.composable.AddCardsToDeck
 import com.ameltz.languagelearner.ui.composable.AddDeck
-import com.ameltz.languagelearner.ui.composable.CardManagement
+import com.ameltz.languagelearner.ui.composable.CardsManagement
 import com.ameltz.languagelearner.ui.composable.DeckManagement
 import com.ameltz.languagelearner.ui.composable.HomePage
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
@@ -107,9 +107,11 @@ fun NavControllerGraph(
         }
         composable<AddCard>(typeMap = mapOf(typeOf<Uuid?>() to UuidOptionalNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<AddCard>()
-            AddCardComposable(addCardViewModel,
+            CardManagementComposable(addCardViewModel,
                 { navController.popBackStack()},
-                args.deckId)
+                args.cardId
+
+            )
         }
         composable<AssociateCardsToDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<AssociateCardsToDeck>()
@@ -117,8 +119,9 @@ fun NavControllerGraph(
                 )
         }
         composable<CardManagement> {
-            CardManagement(cardManagementViewModel, {navController.popBackStack()},
-                {cardId: Uuid -> navController.navigate(AddCard(cardId))})
+            CardsManagement(cardManagementViewModel, {navController.popBackStack()},
+                {cardId: Uuid -> navController.navigate(AddCard(cardId))},
+                {navController.navigate(AddCard())})
         }
     }
 }

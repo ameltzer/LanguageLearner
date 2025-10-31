@@ -10,7 +10,7 @@ object NewDeck
 @Serializable
 data class ManageDeck (val deckId:Uuid)
 @Serializable
-data class AddCard (val deckId:Uuid?)
+data class AddCard(val cardId:Uuid?=null)
 @Serializable
 data class AssociateCardsToDeck(val deckId:Uuid)
 @Serializable

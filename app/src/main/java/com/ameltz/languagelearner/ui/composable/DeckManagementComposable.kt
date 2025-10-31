@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
+import com.ameltz.languagelearner.data.entity.Deck
 import com.ameltz.languagelearner.ui.theme.LanguageLearnerTheme
 import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
 import kotlin.uuid.Uuid
@@ -38,6 +39,26 @@ fun DeckManagement(
     LanguageLearnerTheme {
         Column {
             Row {
+                Button(onClick = {
+                    toHomePage()
+                }) {
+                    Text(text = "Go back")
+                }
+                Button(onClick = {
+                    if (deck != null) {
+                        deckManagementViewModel.saveDeck(
+                            Deck(
+                                deck.deck.uuid,
+                                front.text,
+                                deck.deck.deckSettingsId
+                            )
+                        )
+                    }
+                }) {
+                    Text(text = "Save")
+                }
+            }
+            Row {
                 TextField(
                     value = front,
                     onValueChange = { front = it },
@@ -58,7 +79,7 @@ fun DeckManagement(
                     toCardCreation(deck.deck.uuid)
                 }
             }) {
-                Text(text = "Add Card")
+                Text(text = "Associate Cards")
             }
             (deck?.cardsInDeck?.forEach { cardInDeck ->
                 Text(

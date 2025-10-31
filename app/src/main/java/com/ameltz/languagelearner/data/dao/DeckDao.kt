@@ -28,10 +28,9 @@ abstract class DeckDao {
     @Query("SELECT * FROM deck")
     abstract fun getAll(): List<CardInDeckAndDeckRelation>
 
-    @Transaction
     open fun deleteDeckTransactionally(deckAndCards: CardInDeckAndDeckRelation, cardInDeckDao: CardInDeckDao, cardDao: CardDao) {
-        delete(deckAndCards.deck)
         deckAndCards.cardsInDeck.forEach { cardInDeck -> cardInDeckDao.deleteCardTransactionally(cardInDeck.cardInDeck, cardDao) }
+        delete(deckAndCards.deck)
     }
 
 

@@ -31,7 +31,6 @@ abstract class CardInDeckDao {
     @Query("SELECT * FROM CardInDeck WHERE cardId = :cardId")
     abstract fun getAll(cardId: Uuid): List<CardInDeck>
 
-    @Transaction
     open fun deleteCardTransactionally(cardInDeck: CardInDeck, cardDao: CardDao) {
         delete(cardInDeck)
         val card = cardDao.getCard(cardInDeck.cardId)

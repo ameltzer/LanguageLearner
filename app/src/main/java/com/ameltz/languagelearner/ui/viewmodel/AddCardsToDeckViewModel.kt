@@ -16,10 +16,7 @@ class AddCardsToDeckViewModel  @Inject constructor(val repository: Repository) :
         return repository.getDeck(deckId)
     }
 
-    fun getCardsNotInDeck(deck: CardInDeckAndDeckRelation?) : List<Card> {
-        if(deck == null) {
-            return emptyList()
-        }
+    fun getAllCards() : List<Card> {
         return repository.getAllCards()
     }
 
@@ -27,6 +24,13 @@ class AddCardsToDeckViewModel  @Inject constructor(val repository: Repository) :
         repository.upsertAllCardInDecks(cardIds.map {
             cardId -> CardInDeck(Uuid.random(), 0, 0, cardId, deckId)
         })
+    }
+
+    fun removeCardsFromDeck(deckId: Uuid, cardsToRemove: List<Uuid>) {
+        cardsToRemove.forEach { cardId ->
+            repository.deleteCardInDeck(cardId, deckId)
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@ package com.ameltz.languagelearner.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
+import com.ameltz.languagelearner.data.entity.Deck
 import com.ameltz.languagelearner.data.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -20,5 +21,9 @@ class DeckManagementViewModel @Inject constructor(val repository: Repository) : 
 
     fun deleteCardInDeck(cardInDeck: CardInDeckWithCard) {
         repository.deleteCardinDeck(cardInDeck.cardInDeck)
+    }
+
+    fun saveDeck(deck: Deck) {
+        repository.updateDeck(deck)
     }
 }
