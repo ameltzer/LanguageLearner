@@ -19,17 +19,18 @@ interface Repository {
     fun deleteDeck(deck:CardInDeckAndDeckRelation)
 
     fun getDeck(deckId: Uuid): CardInDeckAndDeckRelation?
+    fun getDeck(deckName: String): CardInDeckAndDeckRelation?
 
     fun upsertCard(card: Card): Card
+    fun insertCard(card: Card)
 
     fun doesCardExist(card: CardInDeckAndCardRelation): Boolean
 
     fun getCard(cardId: Uuid): Card?
+    fun getCard(front: String, back: String): Card?
 
     fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation?
     fun getAllCards(): List<Card>
-
-    fun updateCard(card: CardInDeckAndCardRelation)
 
     fun deleteCard(card: CardInDeckAndCardRelation)
     fun deleteCard(cardId: Uuid)

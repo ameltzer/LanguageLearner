@@ -2,12 +2,13 @@ package com.ameltz.languagelearner.data.entity
 
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.ameltz.languagelearner.ui.model.HomePageDeckModel
 import kotlin.uuid.Uuid
 
-@Entity
+@Entity(indices = [Index(value = ["name"], unique = true)])
 class Deck (
     @PrimaryKey val uuid: Uuid,
     val name: String,

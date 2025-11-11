@@ -2,6 +2,8 @@ package com.ameltz.languagelearner.ui.composable
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
@@ -15,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
@@ -61,7 +64,7 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
                     label = { Text("Back of card") }
                 )
             }
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
                 decksSelected.forEachIndexed { index, item ->
                     Row {
                         Text(text = item.label)
@@ -95,9 +98,7 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
                     back()
                 }
                 if (!decksNotSelected.isEmpty() && cardId != null) {
-                    decksNotSelected.forEach {
-                        addCardViewModel.deleteCardInDeck(cardId, it)
-                    }
+                    addCardViewModel.deleteCardInDecks(cardId, decksNotSelected)
                 }
             }) {
                 Text(text = "Save")

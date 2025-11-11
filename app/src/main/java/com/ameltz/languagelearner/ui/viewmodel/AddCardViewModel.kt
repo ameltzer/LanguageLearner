@@ -46,4 +46,8 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
         this.repository.deleteCardInDeck(cardId, deckId)
     }
 
+    fun deleteCardInDecks(cardId: Uuid, deckIds: List<Uuid>) {
+        deckIds.forEach { this.repository.deleteCardInDeck(cardId, it)  }
+    }
+
 }

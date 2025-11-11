@@ -3,11 +3,13 @@ package com.ameltz.languagelearner.data.entity
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import kotlin.uuid.Uuid
 
 @Entity(
+    indices=[Index(value = ["cardId", "deckId"], unique = true)],
     foreignKeys = [ForeignKey(
         entity = Card::class,
         parentColumns = ["uuid"],
@@ -25,7 +27,13 @@ data class CardInDeck(
     var numberOfTimesShown: Int,
     val cardId: Uuid,
     val deckId: Uuid
-)
+) {
+    companion object {
+        fun createCardInDeck(cardId: Uuid, deckId: Uuid): CardInDeck {
+            return CardInDeck(Uuid.random(), 0, 0, cardId, deckId)
+        }
+    }
+}
 
 data class CardInDeckAndDeckRelation(
     @Embedded val deck: Deck,

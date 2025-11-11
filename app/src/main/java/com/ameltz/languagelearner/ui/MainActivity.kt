@@ -8,8 +8,9 @@ import androidx.activity.viewModels
 import com.ameltz.languagelearner.ui.theme.LanguageLearnerTheme
 import com.ameltz.languagelearner.ui.navigation.NavControllerGraph
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
-import com.ameltz.languagelearner.ui.viewmodel.AddCardsToDeckViewModel
+import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
+import com.ameltz.languagelearner.ui.viewmodel.CardsManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import com.ameltz.languagelearner.ui.viewmodel.NewDeckViewModel
@@ -23,8 +24,9 @@ class MainActivity @Inject constructor(): ComponentActivity() {
     private val homePageViewModel: HomePageViewModel by viewModels()
     private val deckManagementViewModel: DeckManagementViewModel by viewModels()
     private val addCardViewModel: AddCardViewModel by viewModels()
-    private val addCardsToDeckViewModel: AddCardsToDeckViewModel by viewModels()
     private val cardManagementViewModel: CardManagementViewModel by viewModels()
+    private val cardsManagementViewModel: CardsManagementViewModel by viewModels()
+    private val bulkImportViewModel: BulkImportViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,8 @@ class MainActivity @Inject constructor(): ComponentActivity() {
             LanguageLearnerTheme {
                 NavControllerGraph(newDeckViewModel = newDeckViewModel, homePageViewModel = homePageViewModel,
                     deckManagementViewModel = deckManagementViewModel, addCardViewModel = addCardViewModel,
-                    addCardsToDeckViewModel = addCardsToDeckViewModel, cardManagementViewModel = cardManagementViewModel)
+                    cardManagementViewModel = cardManagementViewModel, cardsManagementViewModel = cardsManagementViewModel,
+                    bulkImportViewModel=bulkImportViewModel)
             }
         }
     }

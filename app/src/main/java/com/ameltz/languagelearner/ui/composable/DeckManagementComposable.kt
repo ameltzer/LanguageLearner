@@ -3,6 +3,8 @@ package com.ameltz.languagelearner.ui.composable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -37,7 +39,7 @@ fun DeckManagement(
         mutableStateOf(TextFieldValue(deck?.deck?.name ?: ""))
     }
     LanguageLearnerTheme {
-        Column {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
             Row {
                 Button(onClick = {
                     toHomePage()

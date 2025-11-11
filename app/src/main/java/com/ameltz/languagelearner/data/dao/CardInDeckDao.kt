@@ -3,8 +3,8 @@ package com.ameltz.languagelearner.data.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.ameltz.languagelearner.data.entity.CardInDeck
@@ -25,7 +25,7 @@ abstract class CardInDeckDao {
     @Delete
     protected abstract fun delete(cardInDeck: CardInDeck)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun insertCardInDeck(cardInDeck: CardInDeck)
 
     @Query("SELECT * FROM CardInDeck WHERE cardId = :cardId")

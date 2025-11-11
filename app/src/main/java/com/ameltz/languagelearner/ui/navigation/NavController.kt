@@ -16,8 +16,9 @@ import com.ameltz.languagelearner.ui.composable.CardsManagement
 import com.ameltz.languagelearner.ui.composable.DeckManagement
 import com.ameltz.languagelearner.ui.composable.HomePage
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
-import com.ameltz.languagelearner.ui.viewmodel.AddCardsToDeckViewModel
+import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
+import com.ameltz.languagelearner.ui.viewmodel.CardsManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import com.ameltz.languagelearner.ui.viewmodel.NewDeckViewModel
@@ -78,8 +79,9 @@ fun NavControllerGraph(
     homePageViewModel: HomePageViewModel,
     deckManagementViewModel: DeckManagementViewModel,
     addCardViewModel: AddCardViewModel,
-    addCardsToDeckViewModel: AddCardsToDeckViewModel,
     cardManagementViewModel: CardManagementViewModel,
+    cardsManagementViewModel: CardsManagementViewModel,
+    bulkImportViewModel: BulkImportViewModel
 ) {
 
     NavHost(
@@ -92,7 +94,9 @@ fun NavControllerGraph(
                 toNewDeck={navController.navigate(NewDeck)},
                 homePageViewModel = homePageViewModel,
                 toManageDeck = {deckId -> navController.navigate(ManageDeck(deckId))},
-                toCardManagement = {navController.navigate(CardManagement)}
+                toCardManagement = {navController.navigate(CardManagement)},
+                bulkImportViewModel=bulkImportViewModel
+
             )
         }
         composable<NewDeck> {
@@ -115,11 +119,11 @@ fun NavControllerGraph(
         }
         composable<AssociateCardsToDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<AssociateCardsToDeck>()
-            AddCardsToDeck(args.deckId, addCardsToDeckViewModel, {navController.popBackStack()},
+            AddCardsToDeck(args.deckId, cardManagementViewModel, {navController.popBackStack()},
                 )
         }
         composable<CardManagement> {
-            CardsManagement(cardManagementViewModel, {navController.popBackStack()},
+            CardsManagement(cardsManagementViewModel, {navController.popBackStack()},
                 {cardId: Uuid -> navController.navigate(AddCard(cardId))},
                 {navController.navigate(AddCard())})
         }

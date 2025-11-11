@@ -3,19 +3,21 @@ package com.ameltz.languagelearner.ui.composable
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ameltz.languagelearner.data.entity.Card
-import com.ameltz.languagelearner.ui.viewmodel.AddCardsToDeckViewModel
+import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
 import kotlin.uuid.Uuid
 
 @Composable
 fun AddCardsToDeck(
     deckId: Uuid,
-    addCardsToDeckViewModel: AddCardsToDeckViewModel,
+    cardManagementViewModel: CardManagementViewModel,
     back: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -27,8 +29,8 @@ fun AddCardsToDeck(
 
     // Mock query for list of strings
     LaunchedEffect(deckId) {
-        val deck = addCardsToDeckViewModel.getDeck(deckId)
-        items = addCardsToDeckViewModel.getAllCards()
+        val deck = cardManagementViewModel.getDeck(deckId)
+        items = cardManagementViewModel.getAllCards()
         if (deck != null) {
             val cardInDeck = deck.cardsInDeck.map { it.card.uuid }
             items.forEach { card ->
@@ -73,7 +75,7 @@ fun AddCardsToDeck(
                 CircularProgressIndicator()
             }
         } else {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
                 Button(onClick = {back()}) {
                     Text(text = "Go back")
                 }
@@ -96,9 +98,9 @@ fun AddCardsToDeck(
         // Submit button at bottom
         Button(
             onClick = {
-                addCardsToDeckViewModel.addCardsToDeck(deckId, selectedItems.map { it.uuid })
+                cardManagementViewModel.addCardsToDeck(deckId, selectedItems.map { it.uuid })
                 val cardsToRemove = items.filter { !selectedItems.contains(it) }.map { it.uuid  }
-                addCardsToDeckViewModel.removeCardsFromDeck(deckId, cardsToRemove)
+                cardManagementViewModel.removeCardsFromDeck(deckId, cardsToRemove)
             },
             modifier = Modifier
                 .fillMaxWidth()

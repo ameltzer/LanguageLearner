@@ -42,6 +42,10 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         return deckDao.get(deckId)
     }
 
+    override fun getDeck(deckName: String): CardInDeckAndDeckRelation? {
+        return deckDao.get(deckName)
+    }
+
     // Card operations
     override fun upsertCard(card: Card): Card {
         val existingCard = this.cardDao.getCard(card.front, card.back)
@@ -52,6 +56,10 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         return card
     }
 
+    override fun insertCard(card: Card) {
+        cardDao.create(card)
+    }
+
     override fun doesCardExist(card: CardInDeckAndCardRelation): Boolean {
         return this.cardDao.getCard(card.card.front, card.card.back) != null
     }
@@ -60,16 +68,19 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         return cardDao.getCard(cardId)
     }
 
+    override fun getCard(
+        front: String,
+        back: String
+    ): Card? {
+        return cardDao.getCard(front, back)
+    }
+
     override fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation? {
         return cardDao.getCardWithDeck(cardId)
     }
 
     override fun getAllCards(): List<Card> {
         return cardDao.getAllCards()
-    }
-
-    override fun updateCard(card: CardInDeckAndCardRelation) {
-        cardDao.update(card.card)
     }
 
     override fun deleteCard(card: CardInDeckAndCardRelation) {

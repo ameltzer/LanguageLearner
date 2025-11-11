@@ -16,6 +16,9 @@ abstract class DeckDao {
     @Query("SELECT * FROM deck WHERE uuid = :deckId")
     abstract fun get(deckId: Uuid): CardInDeckAndDeckRelation?
 
+    @Query("SELECT * FROM deck WHERE name = :deckName")
+    abstract fun get(deckName: String): CardInDeckAndDeckRelation?
+
     @Update
     abstract fun update(deck: Deck)
 
