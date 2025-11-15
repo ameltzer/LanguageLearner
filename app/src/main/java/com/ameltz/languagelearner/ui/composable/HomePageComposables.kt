@@ -39,16 +39,15 @@ import kotlin.uuid.Uuid
 
 @Composable
 fun HomePage(toNewDeck: () -> Unit, toManageDeck: (deckId: Uuid) -> Unit, homePageViewModel: HomePageViewModel,
-             toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel) {
+             toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel, toStudyDeck: (studyDeckId: Uuid) -> Unit) {
+    val decks = homePageViewModel.getAllDeckSummaries(toManageDeck)
     LanguageLearnerTheme {
         Scaffold(topBar = {
             Text("Language Learner")
         }) { padding ->
             Column(modifier = Modifier.padding(padding)) {
                 TopBanner(toNewDeck, toCardManagement, bulkImportViewModel)
-                DeckDisplay(homePageViewModel.getAllDeckSummaries().map { dbDeck ->
-                    dbDeck.deck.toHomePageDeckSummary({toManageDeck(dbDeck.deck.uuid)})
-                })
+                DeckDisplay(decks, toStudyDeck)
             }
         }
     }
@@ -130,35 +129,35 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
 }
 
 @Composable
-fun DeckDisplay(decks: List<HomePageDeckModel>) {
+fun DeckDisplay(decks: List<HomePageDeckModel>, toStudyDeck: (studyDeckId: Uuid) -> Unit) {
     val haptics = LocalHapticFeedback.current
     Column {
         decks.forEach { deck ->
             Box {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(Dp(16f)).combinedClickable(
-                        onClick = { deck.printName() },
+                        onClick = { toStudyDeck(deck.todaysDeckId) },
                         onLongClick = {
-                            println("long click on ${deck.getDeckName()}")
+                            println("long click on ${deck.deckName}")
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val toDeckManagement = deck.getToDeckManagement()
+                            val toDeckManagement = deck.toDeckManagement
                             toDeckManagement()
                         })
                 ) {
-                    Text(deck.getDeckName(), color = Color.White)
+                    Text(deck.deckName, color = Color.White)
                     Spacer(Modifier.weight(1f))
                     Text(
-                        deck.getNewCardsDue().toString(),
+                        deck.newCardsDue.toString(),
                         color = Color.Blue,
                         modifier = Modifier.padding(Dp(4f))
                     )
                     Text(
-                        deck.getErrorCardsDue().toString(),
+                        deck.errorCardsDue.toString(),
                         color = Color.Red,
                         modifier = Modifier.padding(Dp(4f))
                     )
                     Text(
-                        deck.getReviewCardsDue().toString(),
+                        deck.reviewCardsDue.toString(),
                         color = Color.Green,
                         modifier = Modifier.padding(Dp(4f))
                     )

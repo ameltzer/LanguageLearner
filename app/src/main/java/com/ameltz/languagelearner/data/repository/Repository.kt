@@ -4,7 +4,13 @@ import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
+import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import com.ameltz.languagelearner.data.entity.Deck
+import com.ameltz.languagelearner.data.entity.StudyDeck
+import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
+import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
+import java.time.Instant
+import java.util.Date
 import kotlin.uuid.Uuid
 
 interface Repository {
@@ -29,6 +35,8 @@ interface Repository {
     fun getCard(cardId: Uuid): Card?
     fun getCard(front: String, back: String): Card?
 
+    fun getCardInDeck(front: String, back: String, deck: Uuid): CardInDeckWithCard?
+
     fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation?
     fun getAllCards(): List<Card>
 
@@ -45,5 +53,13 @@ interface Repository {
     fun deleteCardInDeck(cardId: Uuid, deckId: Uuid)
 
     fun insertCardInDeck(cardInDeck:CardInDeck)
+
+    fun getStudyDeck(deckId: Uuid, instant: Instant): StudyDeckWithCards?
+
+    fun doesStudyDeckExist(deckId: Uuid, instant: Instant): Boolean
+
+    fun upsertStudyDeck(deck: StudyDeckWithCards)
+
+    fun upsertStudyCard(currentCard: StudyCardOfTheDay, studyDeckId: Uuid)
 
 }

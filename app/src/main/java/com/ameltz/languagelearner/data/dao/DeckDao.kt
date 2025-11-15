@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.Deck

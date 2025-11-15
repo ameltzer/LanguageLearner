@@ -14,8 +14,10 @@ class Deck (
     val name: String,
     var deckSettingsId: Uuid
 ) {
-    fun toHomePageDeckSummary(toDeckManagement: () -> Unit, newCardsDue:Int = 0, reviewCardsDue:Int = 0, errorCardsDue:Int = 0): HomePageDeckModel {
-        return HomePageDeckModel(name, newCardsDue, reviewCardsDue, errorCardsDue, toDeckManagement)
+    fun toHomePageDeckSummary(toDeckManagement: () -> Unit, todaysDeck: Uuid,
+                              newCardsDue:Int = 0, reviewCardsDue:Int = 0, errorCardsDue:Int = 0): HomePageDeckModel {
+        return HomePageDeckModel(name, newCardsDue, reviewCardsDue, errorCardsDue, toDeckManagement,
+            todaysDeck)
     }
 }
 

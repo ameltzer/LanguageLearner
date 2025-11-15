@@ -22,7 +22,7 @@ class CardManagementViewModel  @Inject constructor(val repository: Repository) :
 
     fun addCardsToDeck(deckId: Uuid, cardIds: List<Uuid>) {
         repository.upsertAllCardInDecks(cardIds.map {
-            cardId -> CardInDeck(Uuid.random(), 0, 0, cardId, deckId)
+            cardId -> CardInDeck.createCardInDeck(cardId, deckId)
         })
     }
 

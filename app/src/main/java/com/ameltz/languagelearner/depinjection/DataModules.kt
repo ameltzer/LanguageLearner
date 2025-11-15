@@ -8,6 +8,8 @@ import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.repository.DefaultRepository
 import com.ameltz.languagelearner.data.repository.Repository
 import com.ameltz.languagelearner.data.dao.DeckDao
+import com.ameltz.languagelearner.data.dao.StudyCardDao
+import com.ameltz.languagelearner.data.dao.StudyDeckDao
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -44,5 +46,10 @@ object DatabaseModule {
     @Provides
     fun provideCardInDeckDao(database: AppDatabase): CardInDeckDao = database.cardInDeckDao()
 
+    @Provides
+    fun provideStudyDeckDao(database: AppDatabase): StudyDeckDao = database.studyDeckDao()
+
+    @Provides
+    fun provideStudyCardDao(database: AppDatabase): StudyCardDao = database.studyCardDao()
 
 }

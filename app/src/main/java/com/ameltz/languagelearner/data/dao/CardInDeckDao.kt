@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
 import com.ameltz.languagelearner.data.entity.CardInDeck
+import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import kotlin.uuid.Uuid
 
 @Dao
@@ -18,6 +19,9 @@ abstract class CardInDeckDao {
 
     @Query("SELECT * FROM CardInDeck cd INNER JOIN card ON card.uuid = cd.cardId WHERE card.uuid = :cardId AND cd.deckId = :deckId")
     abstract fun getSpecificCardInDeck(cardId: Uuid, deckId: Uuid): CardInDeck?
+
+    @Query("SELECT * FROM CardInDeck cd INNER JOIN card ON card.uuid = cd.cardId WHERE card.front = :front AND card.back = :back AND cd.deckId = :deckId")
+    abstract fun getSpecificCardInDeck(front: String, back: String, deckId: Uuid): CardInDeckWithCard?
 
     @Update
     abstract fun update(cardInDeck: CardInDeck)

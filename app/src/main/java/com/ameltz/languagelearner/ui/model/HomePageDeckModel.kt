@@ -1,33 +1,13 @@
 package com.ameltz.languagelearner.ui.model
 
+import kotlin.uuid.Uuid
 
-class HomePageDeckModel(private val deckName: String, private var newCardsDue: Int,
-                        private var reviewCardsDue: Int, private var errorCardsDue: Int,
-                        private val toDeckManagement: () -> Unit) {
 
+data class HomePageDeckModel(val deckName: String, var newCardsDue: Int, var reviewCardsDue: Int,
+                             var errorCardsDue: Int, val toDeckManagement: () -> Unit,
+                             val todaysDeckId: Uuid
+) {
     fun printName() {
         println(this.deckName)
     }
-
-    fun getDeckName(): String {
-        return this.deckName;
-    }
-
-    fun getNewCardsDue(): Int {
-        return this.newCardsDue;
-    }
-
-    fun getReviewCardsDue(): Int {
-        return this.reviewCardsDue
-    }
-
-    fun getErrorCardsDue(): Int {
-        return this.errorCardsDue
-    }
-
-    fun getToDeckManagement(): () -> Unit {
-        return this.toDeckManagement
-    }
-
-
 }

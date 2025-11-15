@@ -18,8 +18,7 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
         val cardInDB = this.repository.upsertCard(card)
         val toInsert = cardInDecks.map { cardInDeck ->  CardInDeck(
             cardInDeck.uuid,
-            cardInDeck.learnLevel,
-            cardInDeck.numberOfTimesShown,
+            cardInDeck.daysToNextShow,
             cardInDB.uuid,
             cardInDeck.deckId
             ) }

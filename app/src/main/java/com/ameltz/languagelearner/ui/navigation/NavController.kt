@@ -15,6 +15,7 @@ import com.ameltz.languagelearner.ui.composable.AddDeck
 import com.ameltz.languagelearner.ui.composable.CardsManagement
 import com.ameltz.languagelearner.ui.composable.DeckManagement
 import com.ameltz.languagelearner.ui.composable.HomePage
+import com.ameltz.languagelearner.ui.composable.StudyScreen
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
 import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
@@ -81,7 +82,8 @@ fun NavControllerGraph(
     addCardViewModel: AddCardViewModel,
     cardManagementViewModel: CardManagementViewModel,
     cardsManagementViewModel: CardsManagementViewModel,
-    bulkImportViewModel: BulkImportViewModel
+    bulkImportViewModel: BulkImportViewModel,
+    studyViewModel: com.ameltz.languagelearner.ui.viewmodel.StudyViewModel
 ) {
 
     NavHost(
@@ -95,8 +97,8 @@ fun NavControllerGraph(
                 homePageViewModel = homePageViewModel,
                 toManageDeck = {deckId -> navController.navigate(ManageDeck(deckId))},
                 toCardManagement = {navController.navigate(CardManagement)},
-                bulkImportViewModel=bulkImportViewModel
-
+                bulkImportViewModel=bulkImportViewModel,
+                toStudyDeck = {studyDeckId -> navController.navigate(com.ameltz.languagelearner.ui.navigation.StudyDeck(studyDeckId))}
             )
         }
         composable<NewDeck> {
@@ -126,6 +128,14 @@ fun NavControllerGraph(
             CardsManagement(cardsManagementViewModel, {navController.popBackStack()},
                 {cardId: Uuid -> navController.navigate(AddCard(cardId))},
                 {navController.navigate(AddCard())})
+        }
+        composable<com.ameltz.languagelearner.ui.navigation.StudyDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
+            val args = backStackEntry.toRoute<com.ameltz.languagelearner.ui.navigation.StudyDeck>()
+            StudyScreen(
+                studyDeckId = args.studyDeckId,
+                studyViewModel = studyViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

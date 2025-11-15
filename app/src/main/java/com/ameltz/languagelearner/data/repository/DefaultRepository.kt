@@ -3,11 +3,20 @@ package com.ameltz.languagelearner.data.repository
 import com.ameltz.languagelearner.data.dao.CardDao
 import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.dao.DeckDao
+import com.ameltz.languagelearner.data.dao.StudyCardDao
+import com.ameltz.languagelearner.data.dao.StudyDeckDao
 import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
+import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import com.ameltz.languagelearner.data.entity.Deck
+import com.ameltz.languagelearner.data.entity.StudyDeck
+import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
+import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
@@ -15,7 +24,10 @@ import kotlin.uuid.Uuid
 @Singleton
 class DefaultRepository @Inject constructor(val deckDao: DeckDao,
                                             val cardDao: CardDao,
-                                            val cardInDecksDao: CardInDeckDao,) : Repository {
+                                            val cardInDecksDao: CardInDeckDao,
+                                            val studyDeckDao: StudyDeckDao,
+    val studyCardDao: StudyCardDao
+) : Repository {
     //Deck operations
 
     override fun getAllDecks(): List<CardInDeckAndDeckRelation> {
@@ -50,7 +62,7 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     override fun upsertCard(card: Card): Card {
         val existingCard = this.cardDao.getCard(card.front, card.back)
         if(existingCard != null) {
-            return existingCard;
+            return existingCard
         }
         cardDao.upsertCard(card)
         return card
@@ -74,6 +86,11 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     ): Card? {
         return cardDao.getCard(front, back)
     }
+
+    override fun getCardInDeck(front: String, back: String, deck: Uuid): CardInDeckWithCard? {
+        return cardInDecksDao.getSpecificCardInDeck(front, back, deck)
+    }
+
 
     override fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation? {
         return cardDao.getCardWithDeck(cardId)
@@ -123,5 +140,31 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
 
     override fun insertCardInDeck(cardInDeck: CardInDeck) {
         cardInDecksDao.insertCardInDeck(cardInDeck)
+    }
+
+    override fun getStudyDeck(
+        deckId: Uuid,
+        instant: Instant
+    ): StudyDeckWithCards? {
+        return studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli())
+    }
+
+    override fun doesStudyDeckExist(
+        deckId: Uuid,
+        instant: Instant
+    ): Boolean {
+        return studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli()) != null
+    }
+
+    override fun upsertStudyDeck(deck: StudyDeckWithCards) {
+        studyDeckDao.upsertDeck(deck.studyDeck)
+        deck.cards.forEach {
+            studyCardDao.upsertCard(it.studyCardOfTheDay)
+        }
+    }
+
+    override fun upsertStudyCard(currentCard: StudyCardOfTheDay, studyDeckId: Uuid) {
+        studyCardDao.upsertCard(currentCard.toStudyCard(this, studyDeckId).studyCardOfTheDay)
+
     }
 }

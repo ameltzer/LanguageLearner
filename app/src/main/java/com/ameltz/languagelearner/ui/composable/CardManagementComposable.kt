@@ -86,10 +86,7 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
                     val card = Card(card?.card?.uuid ?: Uuid.random(), front.text, back.text)
                     val cardInDecks =
                         selectedDecks.map { deck ->
-                            CardInDeck(
-                                Uuid.random(),
-                                0,
-                                0,
+                            CardInDeck.createCardInDeck(
                                 card.uuid,
                                 deck.uuid
                             )
