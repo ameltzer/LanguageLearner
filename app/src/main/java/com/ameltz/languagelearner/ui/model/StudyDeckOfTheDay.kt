@@ -29,16 +29,25 @@ data class StudyDeckOfTheDay(val studyDeck: Uuid,
 
 data class StudyCardOfTheDay(val front: String,
                              val back: String,
-                             var nextShowDays: Int,
                              var learned: Boolean,
                              var nextShowMins: Int,
                              val deckId: Uuid,
-                             val studyCardId: Uuid) {
+                             val studyCardId: Uuid,
+                             val isNewCard: Boolean,
+                             var lastAttempt: Instant?
+    ) {
     fun toStudyCard(repository: Repository, studyDeckId: Uuid): StudyCardWithCard {
         val cardInDeck = repository.getCardInDeck(front, back, deckId)!!
         return StudyCardWithCard(
-            StudyCard(studyCardId, cardInDeck.cardInDeck.uuid, nextShowDays, learned,
-                studyDeckId),
+            StudyCard(
+                studyCardId,
+                cardInDeck.cardInDeck.uuid,
+                nextShowMins,
+                learned,
+                studyDeckId,
+                isNewCard,
+                lastAttempt?.toEpochMilli()
+            ),
             cardInDeck
         )
     }

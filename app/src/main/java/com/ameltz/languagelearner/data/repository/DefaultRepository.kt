@@ -126,6 +126,11 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         cardInDecksDao.update(cardInDeck)
     }
 
+    override fun updateCardInDeckNextDay(studyCardId: Uuid) {
+        val studyCard = studyCardDao.getCard(studyCardId)
+        cardInDecksDao.updateCardInDeckNextDay(studyCard!!.cardInDeckId)
+    }
+
     override fun deleteCardinDeck(cardInDeck: CardInDeck) {
         cardInDecksDao.deleteCardTransactionally(cardInDeck, cardDao)
     }
@@ -146,7 +151,26 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         deckId: Uuid,
         instant: Instant
     ): StudyDeckWithCards? {
-        return studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli())
+        val studyDeck = studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli())
+        if (studyDeck == null) {
+            return null
+        }
+        studyDeck.cards = studyDeck.cards.filter { card -> !card.studyCardOfTheDay.learned &&
+                (
+                        card.studyCardOfTheDay.lastAttempt == null ||
+                        Instant.now().toEpochMilli() < card.studyCardOfTheDay.nextShowMinutes * (60 * 1000) + card.studyCardOfTheDay.lastAttempt
+                )
+        }
+        return studyDeck
+    }
+
+    override fun isDeckDone(studyDeckId: Uuid): Boolean {
+        val studyDeck = studyDeckDao.getDeck(studyDeckId)
+        return studyDeck == null ||
+                studyDeck.cards.isEmpty() ||
+                studyDeck.cards
+                    .map { card -> card.studyCardOfTheDay.learned }
+                    .reduce { acc, isLearned -> acc && isLearned }
     }
 
     override fun doesStudyDeckExist(

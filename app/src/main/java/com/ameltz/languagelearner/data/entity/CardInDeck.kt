@@ -78,7 +78,7 @@ data class CardInDeckAndDeckRelation(
         var learnCards = 0
 
         resolvedToStudy.cards.forEach { cardsInDeck ->
-            if (cardsInDeck.nextShowDays == 0 && cardsInDeck.nextShowMins == 0) {
+            if (cardsInDeck.isNewCard) {
                 newCards +=1
             } else if (cardsInDeck.nextShowMins <= 15) {
                 learnCards +=1
@@ -115,7 +115,15 @@ data class CardInDeckWithCard(
     val card: Card
 ) {
     fun toInitialStudyCard(): StudyCardOfTheDay {
-        return StudyCardOfTheDay(card.front, card.back, cardInDeck.daysToNextShow,
-            false, cardInDeck.daysToNextShow, cardInDeck.deckId, Uuid.random())
+        return StudyCardOfTheDay(
+            card.front,
+            card.back,
+            false,
+            0,
+            cardInDeck.deckId,
+            Uuid.random(),
+            cardInDeck.daysToNextShow == 0,
+            null
+        )
     }
 }

@@ -11,7 +11,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
 
 @HiltViewModel
@@ -65,17 +64,25 @@ class StudyViewModel @Inject constructor(val repository: Repository) : ViewModel
         isFlipped = false
     }
 
+    fun isDone(studyDeckId: Uuid): Boolean {
+        return repository.isDeckDone(studyDeckId)
+    }
+
     fun updateCurrentCard(difficulty: CardDifficulty) {
-        if (difficulty == CardDifficulty.EASY) {
-            currentCard?.learned = true
-            currentCard?.nextShowDays =
-                (currentCard?.nextShowDays?.times(1.2)?.roundToInt() ?: 1).coerceAtLeast(1)
-        } else if (difficulty == CardDifficulty.MEDIUM) {
-            currentCard?.nextShowMins = 60
-        } else {
-            currentCard?.nextShowMins = 15
+        when (difficulty) {
+            CardDifficulty.EASY -> {
+                currentCard?.learned = true
+                repository.updateCardInDeckNextDay(currentCard!!.studyCardId)
+            }
+            CardDifficulty.MEDIUM -> {
+                currentCard?.nextShowMins = 60
+            }
+            else -> {
+                currentCard?.nextShowMins = 15
+            }
         }
         if (currentCard != null) {
+            currentCard!!.lastAttempt = Instant.now()
             repository.upsertStudyCard(currentCard!!,  currentDeckId!!)
         }
     }

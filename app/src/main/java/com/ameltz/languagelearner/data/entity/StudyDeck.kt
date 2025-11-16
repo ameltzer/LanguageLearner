@@ -19,8 +19,12 @@ import kotlin.uuid.Uuid
         childColumns = ["deckId"],
     )]
 )
-data class StudyDeck(@PrimaryKey val uuid: Uuid, val deckId: Uuid,
-                     val completed: Boolean, val date: Long)
+data class StudyDeck(
+    @PrimaryKey val uuid: Uuid,
+    val deckId: Uuid,
+    val completed: Boolean,
+    val date: Long
+)
 
 data class StudyDeckWithCards(
     @Embedded val studyDeck: StudyDeck,
@@ -29,7 +33,7 @@ data class StudyDeckWithCards(
         entityColumn = "studyDeck",
         entity = StudyCard::class
     )
-    val cards: List<StudyCardWithCard>
+    var cards: List<StudyCardWithCard>
 ) {
     fun toStudyDeckOfTheDay(): StudyDeckOfTheDay {
         return StudyDeckOfTheDay(studyDeck.uuid, studyDeck.deckId,
@@ -46,8 +50,15 @@ data class StudyDeckWithCards(
         childColumns = ["cardInDeckId"]
     )]
 )
-data class StudyCard(@PrimaryKey val uuid: Uuid, val cardInDeckId:Uuid, val nextShowDays: Int, val learned: Boolean,
-                     val studyDeck: Uuid)
+data class StudyCard(
+    @PrimaryKey val uuid: Uuid,
+    val cardInDeckId:Uuid,
+    val nextShowMinutes: Int,
+    val learned: Boolean,
+    val studyDeck: Uuid,
+    val isNewCard: Boolean,
+    val lastAttempt: Long?
+)
 
 data class StudyCardWithCard(
     @Embedded val studyCardOfTheDay: StudyCard,
@@ -59,7 +70,10 @@ data class StudyCardWithCard(
     val cardInDeck: CardInDeckWithCard
 ) {
     fun toInitialStudyCard(): StudyCardOfTheDay {
-        return StudyCardOfTheDay(cardInDeck.card.front, cardInDeck.card.back, studyCardOfTheDay.nextShowDays,
-            studyCardOfTheDay.learned, 0, cardInDeck.cardInDeck.deckId, studyCardOfTheDay.uuid)
+        return StudyCardOfTheDay(cardInDeck.card.front, cardInDeck.card.back,
+            studyCardOfTheDay.learned, studyCardOfTheDay.nextShowMinutes,
+            cardInDeck.cardInDeck.deckId, studyCardOfTheDay.uuid,
+            studyCardOfTheDay.isNewCard,
+            studyCardOfTheDay.lastAttempt?.let { Instant.ofEpochMilli(it) })
     }
 }

@@ -43,6 +43,8 @@ abstract class CardInDeckDao {
         }
     }
 
+    @Query("UPDATE CardInDeck SET daysToNextShow = daysToNextShow + MAX(daysToNextShow * .2, 1) WHERE uuid = :cardInDeckId")
+    abstract fun updateCardInDeckNextDay(cardInDeckId: Uuid)
 
 
 }

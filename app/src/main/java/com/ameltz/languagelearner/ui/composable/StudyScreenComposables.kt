@@ -74,9 +74,16 @@ fun StudyScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     when {
+                        studyViewModel.isDone(studyDeckId) -> {
+                            Text(
+                                text = "Study session complete!",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = Color.White
+                            )
+                        }
                         !studyViewModel.hasCards -> {
                             Text(
-                                text = "No cards to study",
+                                text = "No cards to study. Come back later",
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = Color.White
                             )
