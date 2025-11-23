@@ -75,18 +75,28 @@ fun StudyScreen(
                 ) {
                     when {
                         studyViewModel.isDone(studyDeckId) -> {
-                            Text(
-                                text = "Study session complete!",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = Color.White
-                            )
+                            Column {
+                                Text(
+                                    text = "Study session complete!",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = Color.White
+                                )
+                                Button(onClick = onNavigateBack) {
+                                    Text(text = "Go back")
+                                }
+                            }
                         }
                         !studyViewModel.hasCards -> {
-                            Text(
-                                text = "No cards to study. Come back later",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = Color.White
-                            )
+                            Column {
+                                Text(
+                                    text = "No cards to study. Come back later",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = Color.White
+                                )
+                                Button(onClick = onNavigateBack) {
+                                    Text(text = "Go back")
+                                }
+                            }
                         }
                         studyViewModel.currentCard != null -> {
                             FlashCard(
