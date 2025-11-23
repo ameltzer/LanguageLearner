@@ -17,3 +17,5 @@ data class AssociateCardsToDeck(val deckId:Uuid)
 object CardManagement
 @Serializable
 data class StudyDeck(val studyDeckId: Uuid)
+@Serializable
+object Settings

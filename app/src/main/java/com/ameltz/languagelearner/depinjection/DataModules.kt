@@ -8,6 +8,7 @@ import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.repository.DefaultRepository
 import com.ameltz.languagelearner.data.repository.Repository
 import com.ameltz.languagelearner.data.dao.DeckDao
+import com.ameltz.languagelearner.data.dao.SettingDao
 import com.ameltz.languagelearner.data.dao.StudyCardDao
 import com.ameltz.languagelearner.data.dao.StudyDeckDao
 import dagger.Binds
@@ -34,7 +35,10 @@ object DatabaseModule {
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context.applicationContext, AppDatabase::class.java,
-            "AppDatabase").allowMainThreadQueries().build();
+            "AppDatabase")
+            .allowMainThreadQueries()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
@@ -51,5 +55,8 @@ object DatabaseModule {
 
     @Provides
     fun provideStudyCardDao(database: AppDatabase): StudyCardDao = database.studyCardDao()
+
+    @Provides
+    fun provideSettingDao(database: AppDatabase): SettingDao = database.settingDao()
 
 }

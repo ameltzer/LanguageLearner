@@ -37,7 +37,7 @@ data class StudyDeckWithCards(
 ) {
     fun toStudyDeckOfTheDay(): StudyDeckOfTheDay {
         return StudyDeckOfTheDay(studyDeck.uuid, studyDeck.deckId,
-            cards.map { it.toInitialStudyCard() },
+            cards.sortedBy { it.studyCardOfTheDay.sortOrder }.map { it.toInitialStudyCard() },
             studyDeck.completed,
             Instant.ofEpochMilli(studyDeck.date))
     }
@@ -57,7 +57,8 @@ data class StudyCard(
     val learned: Boolean,
     val studyDeck: Uuid,
     val isNewCard: Boolean,
-    val lastAttempt: Long?
+    val lastAttempt: Long?,
+    val sortOrder: Int = 0
 )
 
 data class StudyCardWithCard(
@@ -74,6 +75,7 @@ data class StudyCardWithCard(
             studyCardOfTheDay.learned, studyCardOfTheDay.nextShowMinutes,
             cardInDeck.cardInDeck.deckId, studyCardOfTheDay.uuid,
             studyCardOfTheDay.isNewCard,
-            studyCardOfTheDay.lastAttempt?.let { Instant.ofEpochMilli(it) })
+            studyCardOfTheDay.lastAttempt?.let { Instant.ofEpochMilli(it) },
+            studyCardOfTheDay.sortOrder)
     }
 }

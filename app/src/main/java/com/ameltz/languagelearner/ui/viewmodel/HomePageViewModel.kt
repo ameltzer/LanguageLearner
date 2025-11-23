@@ -18,10 +18,12 @@ class HomePageViewModel @Inject constructor(val repository: Repository) : ViewMo
                 repository
             )
         }
-
-
-
         return studyMaterial.map { it.first }
+    }
+
+    fun resetDeckForStudy(deckId: Uuid) {
+        repository.resetStudyDeckForStudy(deckId)
+
     }
 
 }

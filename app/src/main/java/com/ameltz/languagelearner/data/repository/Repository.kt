@@ -6,6 +6,7 @@ import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import com.ameltz.languagelearner.data.entity.Deck
+import com.ameltz.languagelearner.data.entity.Setting
 import com.ameltz.languagelearner.data.entity.StudyDeck
 import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
@@ -65,4 +66,9 @@ interface Repository {
 
     fun upsertStudyCard(currentCard: StudyCardOfTheDay, studyDeckId: Uuid)
 
+    fun resetStudyDeckForStudy(deckId: Uuid)
+    fun getHardTimeDelay(): Int
+    fun getMediumTimeDelay(): Int
+    fun saveMediumTimeDelay(mediumTimeDelay: Int)
+    fun saveHardTimeDelay(hardTimeDelay: Int)
 }

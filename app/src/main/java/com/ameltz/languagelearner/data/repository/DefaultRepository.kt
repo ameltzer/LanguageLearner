@@ -3,6 +3,7 @@ package com.ameltz.languagelearner.data.repository
 import com.ameltz.languagelearner.data.dao.CardDao
 import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.dao.DeckDao
+import com.ameltz.languagelearner.data.dao.SettingDao
 import com.ameltz.languagelearner.data.dao.StudyCardDao
 import com.ameltz.languagelearner.data.dao.StudyDeckDao
 import com.ameltz.languagelearner.data.entity.Card
@@ -11,9 +12,11 @@ import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import com.ameltz.languagelearner.data.entity.Deck
+import com.ameltz.languagelearner.data.entity.Setting
 import com.ameltz.languagelearner.data.entity.StudyDeck
 import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
+import com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Date
@@ -26,7 +29,8 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
                                             val cardDao: CardDao,
                                             val cardInDecksDao: CardInDeckDao,
                                             val studyDeckDao: StudyDeckDao,
-    val studyCardDao: StudyCardDao
+                                            val studyCardDao: StudyCardDao,
+                                            val settingDao: SettingDao
 ) : Repository {
     //Deck operations
 
@@ -187,8 +191,40 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         }
     }
 
+    override fun resetStudyDeckForStudy(deckId: Uuid) {
+        studyDeckDao.resetDeckForStudy(deckId)
+        studyCardDao.resetCardsLearnedStatus(deckId)
+
+        // Randomize card order
+        val cards = studyCardDao.getCardsForDeck(deckId)
+        val shuffledIndices = cards.indices.shuffled()
+        cards.forEachIndexed { index, card ->
+            studyCardDao.updateCardSortOrder(card.uuid, shuffledIndices[index])
+        }
+    }
+
     override fun upsertStudyCard(currentCard: StudyCardOfTheDay, studyDeckId: Uuid) {
         studyCardDao.upsertCard(currentCard.toStudyCard(this, studyDeckId).studyCardOfTheDay)
 
     }
+
+    // Settings operations
+    override fun getMediumTimeDelay(): Int {
+        val setting = settingDao.getSetting(SettingsViewModel.MEDIUM_TIME_DELAY_KEY) ?: Setting(SettingsViewModel.MEDIUM_TIME_DELAY_KEY, "15")
+        return Integer.parseInt(setting.value)
+    }
+
+    override fun getHardTimeDelay(): Int {
+        val setting = settingDao.getSetting(SettingsViewModel.HARD_TIME_DELAY_KEY) ?: Setting(SettingsViewModel.HARD_TIME_DELAY_KEY, "60")
+        return Integer.parseInt(setting.value)
+    }
+
+    override fun saveMediumTimeDelay(mediumTimeDelay: Int) {
+        settingDao.upsertSetting(Setting(SettingsViewModel.MEDIUM_TIME_DELAY_KEY, mediumTimeDelay.toString()))
+    }
+
+    override fun saveHardTimeDelay(hardTimeDelay: Int) {
+        settingDao.upsertSetting(Setting(SettingsViewModel.HARD_TIME_DELAY_KEY, hardTimeDelay.toString()))
+    }
+
 }

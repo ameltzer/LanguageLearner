@@ -34,7 +34,8 @@ data class StudyCardOfTheDay(val front: String,
                              val deckId: Uuid,
                              val studyCardId: Uuid,
                              val isNewCard: Boolean,
-                             var lastAttempt: Instant?
+                             var lastAttempt: Instant?,
+                             val sortOrder: Int = 0
     ) {
     fun toStudyCard(repository: Repository, studyDeckId: Uuid): StudyCardWithCard {
         val cardInDeck = repository.getCardInDeck(front, back, deckId)!!
@@ -46,7 +47,8 @@ data class StudyCardOfTheDay(val front: String,
                 learned,
                 studyDeckId,
                 isNewCard,
-                lastAttempt?.toEpochMilli()
+                lastAttempt?.toEpochMilli(),
+                sortOrder
             ),
             cardInDeck
         )

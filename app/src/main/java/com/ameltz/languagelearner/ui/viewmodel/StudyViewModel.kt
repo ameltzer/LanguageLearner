@@ -75,10 +75,10 @@ class StudyViewModel @Inject constructor(val repository: Repository) : ViewModel
                 repository.updateCardInDeckNextDay(currentCard!!.studyCardId)
             }
             CardDifficulty.MEDIUM -> {
-                currentCard?.nextShowMins = 60
+                currentCard?.nextShowMins = repository.getMediumTimeDelay()
             }
             else -> {
-                currentCard?.nextShowMins = 15
+                currentCard?.nextShowMins = repository.getHardTimeDelay()
             }
         }
         if (currentCard != null) {

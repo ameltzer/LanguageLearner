@@ -56,13 +56,16 @@ data class CardInDeckAndDeckRelation(
         val storedToStudy = repository.getStudyDeck(deck.uuid, Instant.now().truncatedTo(ChronoUnit.DAYS))
         val resolvedToStudy: StudyDeckOfTheDay
         if (storedToStudy == null) {
+            // Take cards sorted by priority, then shuffle for random study order
+            val selectedCards = cardsInDeck
+                .sortedBy { it.cardInDeck.daysToNextShow }
+                .take(numCardsToStudy)
+                .shuffled()
+
             resolvedToStudy = StudyDeckOfTheDay(
                 Uuid.random(),
                 deck.uuid,
-                cardsInDeck
-                    .sortedBy { it.cardInDeck.daysToNextShow }
-                    .take(numCardsToStudy)
-                    .map { it.toInitialStudyCard() },
+                selectedCards.mapIndexed { index, card -> card.toInitialStudyCard(index) },
                 false,
                 Instant.now().truncatedTo(ChronoUnit.DAYS)
             )
@@ -114,7 +117,7 @@ data class CardInDeckWithCard(
     )
     val card: Card
 ) {
-    fun toInitialStudyCard(): StudyCardOfTheDay {
+    fun toInitialStudyCard(sortOrder: Int): StudyCardOfTheDay {
         return StudyCardOfTheDay(
             card.front,
             card.back,
@@ -123,7 +126,8 @@ data class CardInDeckWithCard(
             cardInDeck.deckId,
             Uuid.random(),
             cardInDeck.daysToNextShow == 0,
-            null
+            null,
+            sortOrder
         )
     }
 }

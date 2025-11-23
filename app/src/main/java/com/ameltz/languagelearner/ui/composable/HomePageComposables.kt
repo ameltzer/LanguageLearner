@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +27,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import com.ameltz.languagelearner.ui.model.AnkiCard
 import com.ameltz.languagelearner.ui.model.AnkiDeckImport
 import com.ameltz.languagelearner.ui.model.HomePageDeckModel
@@ -33,28 +36,32 @@ import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.Arrays
 import kotlin.collections.forEach
 import kotlin.uuid.Uuid
 
 @Composable
-fun HomePage(toNewDeck: () -> Unit, toManageDeck: (deckId: Uuid) -> Unit, homePageViewModel: HomePageViewModel,
-             toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel, toStudyDeck: (studyDeckId: Uuid) -> Unit) {
+fun HomePage(toNewDeck: () -> Unit,
+             toManageDeck: (deckId: Uuid) -> Unit,
+             homePageViewModel: HomePageViewModel,
+             toCardManagement: () -> Unit,
+             bulkImportViewModel: BulkImportViewModel,
+             toStudyDeck: (studyDeckId: Uuid) -> Unit,
+             toSettings: () -> Unit) {
     val decks = homePageViewModel.getAllDeckSummaries(toManageDeck)
     LanguageLearnerTheme {
         Scaffold(topBar = {
             Text("Language Learner")
         }) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                TopBanner(toNewDeck, toCardManagement, bulkImportViewModel)
-                DeckDisplay(decks, toStudyDeck)
+                TopBanner(toNewDeck, toCardManagement, bulkImportViewModel, toSettings)
+                DeckDisplay(decks, toStudyDeck, homePageViewModel)
             }
         }
     }
 }
 
 @Composable
-fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel) {
+fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel, toSettings: () -> Unit) {
     var fileContent by remember { mutableStateOf<String?>(null) }
     var deckName by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -122,17 +129,28 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
                 // Launch file picker with CSV MIME type filter
                 filePicker.launch("*/*")
             }) {
-                Text("Select File for bulk import")
+                Text("Bulk import")
+            }
+            Button(onClick = {
+                toSettings()
+            }) {
+                Text("Settings")
             }
         }
     }
 }
 
 @Composable
-fun DeckDisplay(decks: List<HomePageDeckModel>, toStudyDeck: (studyDeckId: Uuid) -> Unit) {
+fun DeckDisplay(
+    decks: List<HomePageDeckModel>,
+    toStudyDeck: (studyDeckId: Uuid) -> Unit,
+    homePageViewModel: HomePageViewModel
+) {
     val haptics = LocalHapticFeedback.current
     Column {
         decks.forEach { deck ->
+            var showMenu by remember { mutableStateOf(false) }
+            var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
             Box {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(Dp(16f)).combinedClickable(
@@ -140,8 +158,7 @@ fun DeckDisplay(decks: List<HomePageDeckModel>, toStudyDeck: (studyDeckId: Uuid)
                         onLongClick = {
                             println("long click on ${deck.deckName}")
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val toDeckManagement = deck.toDeckManagement
-                            toDeckManagement()
+                            showMenu = true
                         })
                 ) {
                     Text(deck.deckName, color = Color.White)
@@ -160,6 +177,26 @@ fun DeckDisplay(decks: List<HomePageDeckModel>, toStudyDeck: (studyDeckId: Uuid)
                         deck.reviewCardsDue.toString(),
                         color = Color.Green,
                         modifier = Modifier.padding(Dp(4f))
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    offset = menuOffset
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Reset deck for study") },
+                        onClick = {
+                            showMenu = false
+                            homePageViewModel.resetDeckForStudy(deck.todaysDeckId)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Manage Deck") },
+                        onClick = {
+                            showMenu = false
+                            deck.toDeckManagement()
+                        }
                     )
                 }
             }

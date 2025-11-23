@@ -14,6 +14,7 @@ import com.ameltz.languagelearner.ui.viewmodel.CardsManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import com.ameltz.languagelearner.ui.viewmodel.NewDeckViewModel
+import com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 import com.ameltz.languagelearner.ui.viewmodel.StudyViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,6 +30,7 @@ class MainActivity @Inject constructor(): ComponentActivity() {
     private val cardsManagementViewModel: CardsManagementViewModel by viewModels()
     private val bulkImportViewModel: BulkImportViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +40,8 @@ class MainActivity @Inject constructor(): ComponentActivity() {
                 NavControllerGraph(newDeckViewModel = newDeckViewModel, homePageViewModel = homePageViewModel,
                     deckManagementViewModel = deckManagementViewModel, addCardViewModel = addCardViewModel,
                     cardManagementViewModel = cardManagementViewModel, cardsManagementViewModel = cardsManagementViewModel,
-                    bulkImportViewModel=bulkImportViewModel, studyViewModel = studyViewModel)
+                    bulkImportViewModel=bulkImportViewModel, studyViewModel = studyViewModel,
+                    settingsViewModel = settingsViewModel)
             }
         }
     }

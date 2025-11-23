@@ -15,6 +15,7 @@ import com.ameltz.languagelearner.ui.composable.AddDeck
 import com.ameltz.languagelearner.ui.composable.CardsManagement
 import com.ameltz.languagelearner.ui.composable.DeckManagement
 import com.ameltz.languagelearner.ui.composable.HomePage
+import com.ameltz.languagelearner.ui.composable.SettingsPage
 import com.ameltz.languagelearner.ui.composable.StudyScreen
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
 import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
@@ -23,6 +24,7 @@ import com.ameltz.languagelearner.ui.viewmodel.CardsManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.DeckManagementViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import com.ameltz.languagelearner.ui.viewmodel.NewDeckViewModel
+import com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 import kotlin.reflect.typeOf
 import kotlin.uuid.Uuid
 
@@ -83,7 +85,8 @@ fun NavControllerGraph(
     cardManagementViewModel: CardManagementViewModel,
     cardsManagementViewModel: CardsManagementViewModel,
     bulkImportViewModel: BulkImportViewModel,
-    studyViewModel: com.ameltz.languagelearner.ui.viewmodel.StudyViewModel
+    studyViewModel: com.ameltz.languagelearner.ui.viewmodel.StudyViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
 
     NavHost(
@@ -98,7 +101,8 @@ fun NavControllerGraph(
                 toManageDeck = {deckId -> navController.navigate(ManageDeck(deckId))},
                 toCardManagement = {navController.navigate(CardManagement)},
                 bulkImportViewModel=bulkImportViewModel,
-                toStudyDeck = {studyDeckId -> navController.navigate(com.ameltz.languagelearner.ui.navigation.StudyDeck(studyDeckId))}
+                toStudyDeck = {studyDeckId -> navController.navigate(com.ameltz.languagelearner.ui.navigation.StudyDeck(studyDeckId))},
+                toSettings = {navController.navigate(Settings)}
             )
         }
         composable<NewDeck> {
@@ -135,6 +139,12 @@ fun NavControllerGraph(
                 studyDeckId = args.studyDeckId,
                 studyViewModel = studyViewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable<Settings> {
+            SettingsPage(
+                toHomePage = { navController.popBackStack() },
+                settingsViewModel = settingsViewModel
             )
         }
     }

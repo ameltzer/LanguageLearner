@@ -21,4 +21,8 @@ interface StudyDeckDao {
     @Upsert
     fun upsertDeck(deck: StudyDeck)
 
+    @Query("UPDATE studydeck SET completed = false WHERE uuid = :deckId")
+    fun resetDeckForStudy(deckId: Uuid)
+
+
 }
