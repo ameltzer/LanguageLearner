@@ -182,10 +182,7 @@ fun DeckManagement(
                     FilterChip(
                         selected = sortOption == SortOption.NONE,
                         onClick = { sortOption = SortOption.NONE },
-                        label = { Text("Default") },
-                        leadingIcon = if (sortOption == SortOption.NONE) {
-                            { Icon(Icons.Default.Clear, contentDescription = null) }
-                        } else null
+                        label = { Text("Default") }
                     )
                     FilterChip(
                         selected = sortOption == SortOption.BY_FRONT,
