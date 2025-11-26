@@ -18,10 +18,13 @@ interface StudyCardDao {
     @Query("SELECT * FROM studycard WHERE studyDeck = :deckId")
     fun getCardsForDeck(deckId: Uuid): List<StudyCard>
 
-    @Query("UPDATE studycard SET learned = false WHERE studyDeck = :deckId")
+    @Query("UPDATE studycard SET learned = false, lastAttempt=NULL, nextShowMinutes=0  WHERE studyDeck = :deckId")
     fun resetCardsLearnedStatus(deckId: Uuid)
 
     @Query("UPDATE studycard SET sortOrder = :sortOrder WHERE uuid = :cardId")
     fun updateCardSortOrder(cardId: Uuid, sortOrder: Int)
+
+    @Query("SELECT MAX(sortOrder) FROM studycard WHERE studyDeck = :studyDeckId")
+    fun getMaxSortOrder(studyDeckId: Uuid): Int?
 
 }

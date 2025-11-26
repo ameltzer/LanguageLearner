@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,9 +37,7 @@ fun StudyScreen(
     studyViewModel: StudyViewModel,
     onNavigateBack: () -> Unit
 ) {
-    LaunchedEffect(studyDeckId) {
-        studyViewModel.loadStudyDeck(studyDeckId)
-    }
+    val studyDeck = studyViewModel.loadStudyDeck(studyDeckId)
 
     LanguageLearnerTheme {
         Scaffold { padding ->
@@ -50,11 +47,11 @@ fun StudyScreen(
                     .padding(padding)
             ) {
                 // Progress indicator
-                if (studyViewModel.hasCards) {
-                    val progress = (studyViewModel.currentCardIndex + 1).toFloat() / studyViewModel.cards.size
+                if (studyDeck.cards.isNotEmpty()) {
+                    val progress = (studyViewModel.currentCardIndex + 1).toFloat() / studyDeck.cards.size
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Card ${studyViewModel.currentCardIndex + 1} of ${studyViewModel.cards.size}",
+                            text = "Card ${studyViewModel.currentCardIndex + 1} of ${studyDeck.cards.size}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
@@ -86,7 +83,7 @@ fun StudyScreen(
                                 }
                             }
                         }
-                        !studyViewModel.hasCards -> {
+                        studyDeck.cards.isEmpty() -> {
                             Column {
                                 Text(
                                     text = "No cards to study. Come back later",
@@ -98,15 +95,16 @@ fun StudyScreen(
                                 }
                             }
                         }
-                        studyViewModel.currentCard != null -> {
+                        else -> {
+                            val currentCard = studyDeck.cards[studyViewModel.currentCardIndex]
                             FlashCard(
-                                front = studyViewModel.currentCard!!.front,
-                                back = studyViewModel.currentCard!!.back,
+                                front = currentCard.cardInDeck.card.front,
+                                back = currentCard.cardInDeck.card.back,
                                 isFlipped = studyViewModel.isFlipped,
                                 onCardClick = { studyViewModel.flipCard() },
                                 onDifficultySelected = { difficulty ->
-                                    studyViewModel.updateCurrentCard(difficulty)
-                                    if (studyViewModel.isLastCard) {
+                                    studyViewModel.updateCurrentCard(currentCard, difficulty)
+                                    if (studyViewModel.currentCardIndex == studyDeck.cards.size-1) {
                                         onNavigateBack()
                                     } else {
                                         studyViewModel.nextCard()

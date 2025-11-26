@@ -106,7 +106,7 @@ fun NavControllerGraph(
             )
         }
         composable<NewDeck> {
-            AddDeck({navController.popBackStack()}, newDeckViewModel)
+            AddDeck({navController.navigate(LanguageLearnerHomePage)}, newDeckViewModel)
         }
         composable<ManageDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<ManageDeck>()
@@ -118,32 +118,32 @@ fun NavControllerGraph(
         composable<AddCard>(typeMap = mapOf(typeOf<Uuid?>() to UuidOptionalNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<AddCard>()
             CardManagementComposable(addCardViewModel,
-                { navController.popBackStack()},
+                { navController.navigate(LanguageLearnerHomePage)},
                 args.cardId
 
             )
         }
         composable<AssociateCardsToDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<AssociateCardsToDeck>()
-            AddCardsToDeck(args.deckId, cardManagementViewModel, {navController.popBackStack()},
+            AddCardsToDeck(args.deckId, cardManagementViewModel, {navController.navigate(LanguageLearnerHomePage)},
                 )
         }
         composable<CardManagement> {
-            CardsManagement(cardsManagementViewModel, {navController.popBackStack()},
+            CardsManagement(cardsManagementViewModel, {navController.navigate(LanguageLearnerHomePage)},
                 {cardId: Uuid -> navController.navigate(AddCard(cardId))},
                 {navController.navigate(AddCard())})
         }
-        composable<com.ameltz.languagelearner.ui.navigation.StudyDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
-            val args = backStackEntry.toRoute<com.ameltz.languagelearner.ui.navigation.StudyDeck>()
+        composable<StudyDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
+            val args = backStackEntry.toRoute<StudyDeck>()
             StudyScreen(
                 studyDeckId = args.studyDeckId,
                 studyViewModel = studyViewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.navigate(LanguageLearnerHomePage) }
             )
         }
         composable<Settings> {
             SettingsPage(
-                toHomePage = { navController.popBackStack() },
+                toHomePage = { navController.navigate(LanguageLearnerHomePage) },
                 settingsViewModel = settingsViewModel
             )
         }

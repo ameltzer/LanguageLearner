@@ -7,6 +7,7 @@ import com.ameltz.languagelearner.data.entity.CardInDeckAndDeckRelation
 import com.ameltz.languagelearner.data.entity.CardInDeckWithCard
 import com.ameltz.languagelearner.data.entity.Deck
 import com.ameltz.languagelearner.data.entity.Setting
+import com.ameltz.languagelearner.data.entity.StudyCardWithCard
 import com.ameltz.languagelearner.data.entity.StudyDeck
 import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
@@ -29,7 +30,6 @@ interface Repository {
     fun getDeck(deckName: String): CardInDeckAndDeckRelation?
 
     fun upsertCard(card: Card): Card
-    fun insertCard(card: Card)
 
     fun doesCardExist(card: CardInDeckAndCardRelation): Boolean
 
@@ -41,22 +41,19 @@ interface Repository {
     fun getCardWithDecks(cardId: Uuid): CardInDeckAndCardRelation?
     fun getAllCards(): List<Card>
 
-    fun deleteCard(card: CardInDeckAndCardRelation)
     fun deleteCard(cardId: Uuid)
 
-    fun upsertAllCardInDecks(cardInDecks: List<CardInDeck>)
 
     fun doesCardInDeckExist(cardInDeck: CardInDeck): Boolean
 
-    fun updateCardInDeck(cardInDeck: CardInDeck)
     fun updateCardInDeckNextDay(studyCardId: Uuid)
 
     fun deleteCardinDeck(cardInDeck: CardInDeck)
     fun deleteCardInDeck(cardId: Uuid, deckId: Uuid)
 
-    fun insertCardInDeck(cardInDeck:CardInDeck)
 
     fun getStudyDeck(deckId: Uuid, instant: Instant): StudyDeckWithCards?
+    fun getStudyDeck(studyDeckId: Uuid): StudyDeckWithCards?
 
     fun isDeckDone(studyDeckId: Uuid): Boolean
 
@@ -64,11 +61,14 @@ interface Repository {
 
     fun upsertStudyDeck(deck: StudyDeckWithCards)
 
-    fun upsertStudyCard(currentCard: StudyCardOfTheDay, studyDeckId: Uuid)
+    fun upsertStudyCard(currentCard: StudyCardWithCard, studyDeckId: Uuid)
 
     fun resetStudyDeckForStudy(deckId: Uuid)
     fun getHardTimeDelay(): Int
     fun getMediumTimeDelay(): Int
     fun saveMediumTimeDelay(mediumTimeDelay: Int)
     fun saveHardTimeDelay(hardTimeDelay: Int)
+    fun getNumCardsToStudy(): Int
+    fun saveNumCardsToStudy(numCards: Int)
+    fun upsertAllCardInDecks(cardInDecks: List<CardInDeck>, updateIfExists: Boolean)
 }

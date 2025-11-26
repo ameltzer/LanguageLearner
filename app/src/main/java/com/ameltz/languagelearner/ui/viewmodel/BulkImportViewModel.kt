@@ -26,10 +26,10 @@ class BulkImportViewModel @Inject constructor(val repository: Repository) : View
         ankiDeck.cards.forEach { card ->
             var appCard = card.toCard()
             try {
-                repository.insertCard(appCard)
+                repository.upsertCard(appCard)
                 appCard = repository.getCard(appCard.front, appCard.back)!!
                 val deckCard = CardInDeck.createCardInDeck(appCard.uuid, deck.deck.uuid)
-                repository.insertCardInDeck(deckCard)
+                repository.upsertAllCardInDecks(listOf(deckCard), false)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

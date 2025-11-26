@@ -25,6 +25,7 @@ import kotlin.uuid.Uuid
         entity = Deck::class,
         parentColumns = ["uuid"],
         childColumns = ["deckId"],
+        onDelete = ForeignKey.CASCADE
     )]
 )
 data class CardInDeck(
@@ -52,7 +53,6 @@ data class CardInDeckAndDeckRelation(
     fun generateStudyMaterial(toDeckManagement: () -> Unit,
                               numCardsToStudy: Int,
                               repository: Repository): Pair<HomePageDeckModel, StudyDeckOfTheDay> {
-
         val storedToStudy = repository.getStudyDeck(deck.uuid, Instant.now().truncatedTo(ChronoUnit.DAYS))
         val resolvedToStudy: StudyDeckOfTheDay
         if (storedToStudy == null) {
@@ -74,8 +74,6 @@ data class CardInDeckAndDeckRelation(
             resolvedToStudy = storedToStudy.toStudyDeckOfTheDay()
         }
 
-        resolvedToStudy.cards = resolvedToStudy.cards.filter { !it.learned }
-
         var newCards = 0
         var reviewCards = 0
         var learnCards = 0
@@ -83,7 +81,7 @@ data class CardInDeckAndDeckRelation(
         resolvedToStudy.cards.forEach { cardsInDeck ->
             if (cardsInDeck.isNewCard) {
                 newCards +=1
-            } else if (cardsInDeck.nextShowMins <= 15) {
+            } else if (cardsInDeck.nextShowMins <= repository.getHardTimeDelay()) {
                 learnCards +=1
             } else {
                 reviewCards +=1
@@ -92,7 +90,7 @@ data class CardInDeckAndDeckRelation(
 
         val homePageSummary = deck.toHomePageDeckSummary(
             toDeckManagement,
-            resolvedToStudy.deckId,
+            resolvedToStudy.studyDeck,
             newCards,
             reviewCards,
             learnCards

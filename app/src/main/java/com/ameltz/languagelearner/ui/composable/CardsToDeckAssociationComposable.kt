@@ -25,9 +25,9 @@ fun AddCardsToDeck(
     var selectedItems by remember { mutableStateOf<Set<Card>>(emptySet()) }
     var isLoading by remember { mutableStateOf(true) }
     var displayName by remember { mutableStateOf("Deck Name") }
+    var sortOption by remember { mutableStateOf(SortOption.NONE) }
 
 
-    // Mock query for list of strings
     LaunchedEffect(deckId) {
         val deck = cardManagementViewModel.getDeck(deckId)
         items = cardManagementViewModel.getAllCards()
@@ -75,11 +75,45 @@ fun AddCardsToDeck(
                 CircularProgressIndicator()
             }
         } else {
+            val sortedItems = when (sortOption) {
+                SortOption.BY_FRONT -> items.sortedBy { it.front }
+                SortOption.BY_BACK -> items.sortedBy { it.back }
+                SortOption.NONE -> items
+            }
+
             Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
-                Button(onClick = {back()}) {
-                    Text(text = "Go back")
+                Row {
+                    Button(onClick = { back() }) {
+                        Text(text = "Go back")
+                    }
+                    // Submit button at bottom
+                    Button(
+                        onClick = {
+                            println("card to dec association update")
+                            cardManagementViewModel.addCardsToDeck(deckId, selectedItems.map { it.uuid })
+                            val cardsToRemove = items.filter { !selectedItems.contains(it) }.map { it.uuid  }
+                            cardManagementViewModel.removeCardsFromDeck(deckId, cardsToRemove)
+                            back()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        Text("Submit")
+                    }
                 }
-                items.forEach { item ->
+                Row {
+                    Button(onClick = { sortOption = SortOption.NONE }) {
+                        Text("No Sort")
+                    }
+                    Button(onClick = { sortOption = SortOption.BY_FRONT }) {
+                        Text("Sort by Front")
+                    }
+                    Button(onClick = { sortOption = SortOption.BY_BACK }) {
+                        Text("Sort by Back")
+                    }
+                }
+                sortedItems.forEach { item ->
                     SelectableRow(
                         text = item.display(),
                         isSelected = selectedItems.contains(item),
@@ -95,19 +129,6 @@ fun AddCardsToDeck(
             }
         }
 
-        // Submit button at bottom
-        Button(
-            onClick = {
-                cardManagementViewModel.addCardsToDeck(deckId, selectedItems.map { it.uuid })
-                val cardsToRemove = items.filter { !selectedItems.contains(it) }.map { it.uuid  }
-                cardManagementViewModel.removeCardsFromDeck(deckId, cardsToRemove)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        ) {
-            Text("Submit")
-        }
     }
 }
 

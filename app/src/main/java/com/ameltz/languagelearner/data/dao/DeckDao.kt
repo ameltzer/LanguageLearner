@@ -31,7 +31,7 @@ abstract class DeckDao {
     abstract fun getAll(): List<CardInDeckAndDeckRelation>
 
     open fun deleteDeckTransactionally(deckAndCards: CardInDeckAndDeckRelation, cardInDeckDao: CardInDeckDao, cardDao: CardDao) {
-        deckAndCards.cardsInDeck.forEach { cardInDeck -> cardInDeckDao.deleteCardTransactionally(cardInDeck.cardInDeck, cardDao) }
+        // CASCADE will automatically delete all CardInDeck entries and their associated StudyCards
         delete(deckAndCards.deck)
     }
 

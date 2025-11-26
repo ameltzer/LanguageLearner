@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,6 +39,15 @@ fun DeckManagement(
     var front by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(deck?.deck?.name ?: ""))
     }
+    var sortOption by remember { mutableStateOf(SortOption.NONE) }
+
+    val sortedCards = deck?.cardsInDeck?.let { cards ->
+        when (sortOption) {
+            SortOption.BY_FRONT -> cards.sortedBy { it.card.front }
+            SortOption.BY_BACK -> cards.sortedBy { it.card.back }
+            SortOption.NONE -> cards
+        }
+    }
     LanguageLearnerTheme {
         Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
             Row {
@@ -56,6 +66,7 @@ fun DeckManagement(
                             )
                         )
                     }
+                    toHomePage()
                 }) {
                     Text(text = "Save")
                 }
@@ -83,7 +94,18 @@ fun DeckManagement(
             }) {
                 Text(text = "Associate Cards")
             }
-            (deck?.cardsInDeck?.forEach { cardInDeck ->
+            Row {
+                Button(onClick = { sortOption = SortOption.NONE }) {
+                    Text("No Sort")
+                }
+                Button(onClick = { sortOption = SortOption.BY_FRONT }) {
+                    Text("Sort by Front")
+                }
+                Button(onClick = { sortOption = SortOption.BY_BACK }) {
+                    Text("Sort by Back")
+                }
+            }
+            (sortedCards?.forEach { cardInDeck ->
                 Text(
                     text = cardInDeck.card.display(),
                     modifier = Modifier.combinedClickable(

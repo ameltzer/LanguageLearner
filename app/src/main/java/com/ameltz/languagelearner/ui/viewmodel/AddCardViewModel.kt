@@ -22,7 +22,7 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
             cardInDB.uuid,
             cardInDeck.deckId
             ) }
-        this.repository.upsertAllCardInDecks(toInsert);
+        this.repository.upsertAllCardInDecks(toInsert, true)
 
     }
 
@@ -39,10 +39,6 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
 
     fun deleteCard(cardId: Uuid) {
         this.repository.deleteCard(cardId)
-    }
-
-    fun deleteCardInDeck(cardId: Uuid, deckId: Uuid) {
-        this.repository.deleteCardInDeck(cardId, deckId)
     }
 
     fun deleteCardInDecks(cardId: Uuid, deckIds: List<Uuid>) {

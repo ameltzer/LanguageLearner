@@ -12,11 +12,12 @@ import java.time.Instant
 import kotlin.uuid.Uuid
 
 @Entity(
-    indices=[Index(value = ["deckId"], unique = true), Index(value=["date"])],
+    indices=[Index(value = ["deckId", "date"], unique = true), Index(value=["date"])],
     foreignKeys = [ForeignKey(
         entity = Deck::class,
         parentColumns = ["uuid"],
         childColumns = ["deckId"],
+        onDelete = ForeignKey.CASCADE
     )]
 )
 data class StudyDeck(
@@ -44,20 +45,24 @@ data class StudyDeckWithCards(
 }
 
 @Entity(
+    indices=[
+        Index(value = ["cardInDeckId", "studyDeck"], unique = true),
+            ],
     foreignKeys = [ForeignKey(
         entity = CardInDeck::class,
         parentColumns = ["uuid"],
-        childColumns = ["cardInDeckId"]
+        childColumns = ["cardInDeckId"],
+        onDelete = ForeignKey.CASCADE
     )]
 )
 data class StudyCard(
     @PrimaryKey val uuid: Uuid,
     val cardInDeckId:Uuid,
-    val nextShowMinutes: Int,
-    val learned: Boolean,
+    var nextShowMinutes: Int,
+    var learned: Boolean,
     val studyDeck: Uuid,
     val isNewCard: Boolean,
-    val lastAttempt: Long?,
+    var lastAttempt: Long?,
     val sortOrder: Int = 0
 )
 

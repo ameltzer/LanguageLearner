@@ -23,14 +23,8 @@ abstract class CardInDeckDao {
     @Query("SELECT * FROM CardInDeck cd INNER JOIN card ON card.uuid = cd.cardId WHERE card.front = :front AND card.back = :back AND cd.deckId = :deckId")
     abstract fun getSpecificCardInDeck(front: String, back: String, deckId: Uuid): CardInDeckWithCard?
 
-    @Update
-    abstract fun update(cardInDeck: CardInDeck)
-
     @Delete
     protected abstract fun delete(cardInDeck: CardInDeck)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract fun insertCardInDeck(cardInDeck: CardInDeck)
 
     @Query("SELECT * FROM CardInDeck WHERE cardId = :cardId")
     abstract fun getAll(cardId: Uuid): List<CardInDeck>

@@ -11,15 +11,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +45,11 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.collections.forEach
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.io.File
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(toNewDeck: () -> Unit,
              toManageDeck: (deckId: Uuid) -> Unit,
@@ -47,21 +58,45 @@ fun HomePage(toNewDeck: () -> Unit,
              bulkImportViewModel: BulkImportViewModel,
              toStudyDeck: (studyDeckId: Uuid) -> Unit,
              toSettings: () -> Unit) {
-    val decks = homePageViewModel.getAllDeckSummaries(toManageDeck)
+    var isRefreshing by remember { mutableStateOf(false) }
+    var decks by remember { mutableStateOf(homePageViewModel.getAllDeckSummaries(toManageDeck)) }
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh: () -> Unit = {
+        coroutineScope.launch {
+            isRefreshing = true
+            decks = homePageViewModel.getAllDeckSummaries(toManageDeck)
+            delay(300) // Give UI time to show the refresh indicator
+            isRefreshing = false
+        }
+    }
+    val state = rememberPullToRefreshState()
     LanguageLearnerTheme {
         Scaffold(topBar = {
             Text("Language Learner")
         }) { padding ->
-            Column(modifier = Modifier.padding(padding)) {
-                TopBanner(toNewDeck, toCardManagement, bulkImportViewModel, toSettings)
-                DeckDisplay(decks, toStudyDeck, homePageViewModel)
+            PullToRefreshBox (
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                state = state,
+                indicator = {
+                    Indicator(isRefreshing = isRefreshing, state=state)
+                }
+            ) {
+                Column(modifier = Modifier
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                ) {
+                    TopBanner(toNewDeck, toCardManagement, bulkImportViewModel, toSettings, onRefresh)
+                    DeckDisplay(decks, toStudyDeck, homePageViewModel, onRefresh)
+                }
             }
         }
     }
 }
 
 @Composable
-fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel, toSettings: () -> Unit) {
+fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportViewModel: BulkImportViewModel,
+              toSettings: () -> Unit, onRefresh: () -> Unit) {
     var fileContent by remember { mutableStateOf<String?>(null) }
     var deckName by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -85,6 +120,7 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
                         if (nameIndex != -1) {
                             deckName = cursor.getString(nameIndex)
                         }
+
                     }
                 }
 
@@ -93,6 +129,10 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
                     deckName = it.lastPathSegment ?: "imported_deck"
                 }
 
+                if (deckName != null) {
+
+                    deckName = File(deckName).nameWithoutExtension
+                }
                 if (fileContent != null && deckName != null) {
                     val cards = fileContent!!.split("\n")
                         .filter { it.isNotBlank() }
@@ -104,6 +144,8 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
                     val ankiDeck = AnkiDeckImport(deckName!!, cards)
                     bulkImportViewModel.importAnkiDeck(ankiDeck)
                 }
+                onRefresh()
+
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -115,7 +157,6 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
     LanguageLearnerTheme {
         FlowRow  {
             Button(onClick = {
-                    println("New Deck")
                     toNewDeck()
                 }, modifier = Modifier.padding(Dp(6f))) {
                 Text("New Deck")
@@ -144,13 +185,15 @@ fun TopBanner(toNewDeck: () -> Unit, toCardManagement: () -> Unit, bulkImportVie
 fun DeckDisplay(
     decks: List<HomePageDeckModel>,
     toStudyDeck: (studyDeckId: Uuid) -> Unit,
-    homePageViewModel: HomePageViewModel
+    homePageViewModel: HomePageViewModel,
+    onRefresh: () -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
     Column {
         decks.forEach { deck ->
             var showMenu by remember { mutableStateOf(false) }
             var menuOffset by remember { mutableStateOf(DpOffset.Zero) }
+            println("early: ${deck.todaysDeckId}")
             Box {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(Dp(16f)).combinedClickable(
@@ -189,6 +232,7 @@ fun DeckDisplay(
                         onClick = {
                             showMenu = false
                             homePageViewModel.resetDeckForStudy(deck.todaysDeckId)
+                            onRefresh()
                         }
                     )
                     DropdownMenuItem(

@@ -25,6 +25,10 @@ import kotlin.uuid.Uuid
 
 data class CheckboxItem (val label: String, var isSelected: Boolean, val deckId: Uuid)
 
+enum class DeckSortOption {
+    NONE,
+    BY_NAME
+}
 
 @Composable
 fun CardManagementComposable(addCardViewModel: AddCardViewModel,
@@ -42,12 +46,19 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
         mutableStateOf(TextFieldValue(card?.card?.back ?: ""))
     }
 
+    var sortOption by remember { mutableStateOf(DeckSortOption.NONE) }
+
     val decksSelected = remember {
         mutableStateListOf(
             *decks.map { deck ->  CheckboxItem(deck.name,
                 isSelected = (card?.instancesOfCard?.any { cardInDeck -> cardInDeck.deckId == deck.uuid } ?: false),
                 deck.uuid) }.toTypedArray()
         )
+    }
+
+    val sortedDecks = when (sortOption) {
+        DeckSortOption.BY_NAME -> decksSelected.sortedBy { it.label }
+        DeckSortOption.NONE -> decksSelected
     }
 
     LanguageLearnerTheme {
@@ -64,14 +75,25 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
                     label = { Text("Back of card") }
                 )
             }
+            Row {
+                Button(onClick = { sortOption = DeckSortOption.NONE }) {
+                    Text("No Sort")
+                }
+                Button(onClick = { sortOption = DeckSortOption.BY_NAME }) {
+                    Text("Sort by Name")
+                }
+            }
             Column(modifier = Modifier.verticalScroll(rememberScrollState()))  {
-                decksSelected.forEachIndexed { index, item ->
+                sortedDecks.forEach { item ->
                     Row {
                         Text(text = item.label)
                         Checkbox(
                             checked = item.isSelected,
                             onCheckedChange = { isChecked ->
-                                decksSelected[index] = item.copy(isSelected = isChecked)
+                                val originalIndex = decksSelected.indexOfFirst { it.deckId == item.deckId }
+                                if (originalIndex != -1) {
+                                    decksSelected[originalIndex] = item.copy(isSelected = isChecked)
+                                }
                             }
                         )
                     }
@@ -92,11 +114,11 @@ fun CardManagementComposable(addCardViewModel: AddCardViewModel,
                             )
                         }
                     addCardViewModel.addCard(cardInDecks, card)
-                    back()
                 }
                 if (!decksNotSelected.isEmpty() && cardId != null) {
                     addCardViewModel.deleteCardInDecks(cardId, decksNotSelected)
                 }
+                back()
             }) {
                 Text(text = "Save")
             }

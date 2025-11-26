@@ -11,19 +11,23 @@ import kotlin.uuid.Uuid
 class HomePageViewModel @Inject constructor(val repository: Repository) : ViewModel() {
 
     fun getAllDeckSummaries(toManageDeck: (deckId: Uuid) -> Unit): List<HomePageDeckModel> {
+        println("[HomePageViewModel] getAllDeckSummaries() called")
         val studyMaterial = this.repository.getAllDecks().map { dbDeck ->
+            println("[HomePageViewModel] getAllDeckSummaries() -> generating study material for deck: ${dbDeck.deck.name}")
             dbDeck.generateStudyMaterial(
                 {toManageDeck(dbDeck.deck.uuid)},
-                50,
+                repository.getNumCardsToStudy(),
                 repository
             )
         }
+        println("[HomePageViewModel] getAllDeckSummaries() -> returning ${studyMaterial.size} deck summaries")
         return studyMaterial.map { it.first }
     }
 
     fun resetDeckForStudy(deckId: Uuid) {
+        println("[HomePageViewModel] resetDeckForStudy() called with deckId: $deckId")
         repository.resetStudyDeckForStudy(deckId)
-
+        println("[HomePageViewModel] resetDeckForStudy() -> completed")
     }
 
 }
