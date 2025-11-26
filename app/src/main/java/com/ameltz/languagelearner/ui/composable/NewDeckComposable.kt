@@ -32,16 +32,18 @@ fun AddDeck(toHomePage: () -> Unit, newDeckViewModel: NewDeckViewModel) {
             )
             Button(onClick = {
                 println("added!")
-                newDeckViewModel.createNewDeck(
-                    CardInDeckAndDeckRelation(
-                        Deck(
-                            Uuid.random(),
-                            deckName.text,
-                            Uuid.parse("10c0eca2-f236-423e-9c23-04bcce7450e6")
-                        ),
-                        ArrayList()
+                if (!deckName.text.isEmpty()) {
+                    newDeckViewModel.createNewDeck(
+                        CardInDeckAndDeckRelation(
+                            Deck(
+                                Uuid.random(),
+                                deckName.text,
+                                Uuid.parse("10c0eca2-f236-423e-9c23-04bcce7450e6")
+                            ),
+                            ArrayList()
+                        )
                     )
-                )
+                }
                 toHomePage()
             }) {
                 Text("Save")
