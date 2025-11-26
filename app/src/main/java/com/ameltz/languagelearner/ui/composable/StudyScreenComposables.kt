@@ -11,14 +11,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +38,7 @@ import com.ameltz.languagelearner.ui.viewmodel.CardDifficulty
 import com.ameltz.languagelearner.ui.viewmodel.StudyViewModel
 import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudyScreen(
     studyDeckId: Uuid,
@@ -40,7 +48,34 @@ fun StudyScreen(
     val studyDeck = studyViewModel.loadStudyDeck(studyDeckId)
 
     LanguageLearnerTheme {
-        Scaffold { padding ->
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        if (studyDeck.cards.isNotEmpty()) {
+                            Text(
+                                "Card ${studyViewModel.currentCardIndex + 1} of ${studyDeck.cards.size}",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        } else {
+                            Text("Study Session")
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -49,18 +84,10 @@ fun StudyScreen(
                 // Progress indicator
                 if (studyDeck.cards.isNotEmpty()) {
                     val progress = (studyViewModel.currentCardIndex + 1).toFloat() / studyDeck.cards.size
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Card ${studyViewModel.currentCardIndex + 1} of ${studyDeck.cards.size}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
 
                 // Flashcard content
@@ -72,26 +99,43 @@ fun StudyScreen(
                 ) {
                     when {
                         studyViewModel.isDone(studyDeckId) -> {
-                            Column {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 Text(
                                     text = "Study session complete!",
                                     style = MaterialTheme.typography.headlineMedium,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Great job! All cards reviewed.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Button(onClick = onNavigateBack) {
-                                    Text(text = "Go back")
+                                    Text(text = "Back to Home")
                                 }
                             }
                         }
                         studyDeck.cards.isEmpty() -> {
-                            Column {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
                                 Text(
-                                    text = "No cards to study. Come back later",
+                                    text = "No cards to study",
                                     style = MaterialTheme.typography.headlineMedium,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Come back later or add more cards to this deck",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
                                 )
                                 Button(onClick = onNavigateBack) {
-                                    Text(text = "Go back")
+                                    Text(text = "Back to Home")
                                 }
                             }
                         }
@@ -164,49 +208,43 @@ fun FlashCard(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                DifficultyButton(
-                    text = "Hard",
-                    color = Color.Red,
-                    onClick = { onDifficultySelected(CardDifficulty.HARD) }
-                )
-                DifficultyButton(
-                    text = "Medium",
-                    color = Color.Yellow,
-                    onClick = { onDifficultySelected(CardDifficulty.MEDIUM) }
-                )
-                DifficultyButton(
-                    text = "Easy",
-                    color = Color.Green,
-                    onClick = { onDifficultySelected(CardDifficulty.EASY) }
-                )
+                Button(
+                    onClick = { onDifficultySelected(CardDifficulty.HARD) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Hard")
+                }
+                Spacer(modifier = Modifier.padding(4.dp))
+                Button(
+                    onClick = { onDifficultySelected(CardDifficulty.MEDIUM) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Medium")
+                }
+                Spacer(modifier = Modifier.padding(4.dp))
+                Button(
+                    onClick = { onDifficultySelected(CardDifficulty.EASY) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Easy")
+                }
             }
         } else {
-            // Instruction text when card is not flipped
             Text(
-                text = "Tap to reveal answer",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
+                text = "Tap card to reveal answer",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
             )
         }
-    }
-}
-
-@Composable
-fun DifficultyButton(
-    text: String,
-    color: Color,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = color),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        Text(
-            text = text,
-            color = Color.Black,
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }
