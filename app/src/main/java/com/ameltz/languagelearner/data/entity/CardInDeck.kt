@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.uuid.Uuid
 
 @Entity(
-    indices=[Index(value = ["cardId", "deckId"], unique = true)],
+    indices=[Index(value = ["cardId", "deckId"], unique = true), Index(value=["deckId"])],
     foreignKeys = [ForeignKey(
         entity = Card::class,
         parentColumns = ["uuid"],
@@ -30,13 +30,48 @@ import kotlin.uuid.Uuid
 )
 data class CardInDeck(
     @PrimaryKey val uuid: Uuid,
-    val daysToNextShow: Int,
+    val priority: Int,
+    val easyCount: Int,
+    val mediumCount: Int,
+    val hardCount: Int,
     val cardId: Uuid,
-    val deckId: Uuid
+    val deckId: Uuid,
+    val lastReviewDate: Long?
 ) {
     companion object {
         fun createCardInDeck(cardId: Uuid, deckId: Uuid): CardInDeck {
-            return CardInDeck(Uuid.random(), 0,  cardId, deckId)
+            return CardInDeck(Uuid.random(), 100, 0, 0, 0, cardId, deckId, null)
+        }
+
+        fun calculatePriority(
+            easyCount: Int,
+            mediumCount: Int,
+            hardCount: Int,
+            lastReviewDate: Long?
+        ): Int {
+            val totalReviews = easyCount + mediumCount + hardCount
+
+            // New cards get high priority (100) to ensure they're studied
+            if (totalReviews == 0) return 100
+
+            // Calculate difficulty ratio: harder cards get higher scores
+            // hardCount weighted 3x, mediumCount weighted 1x
+            val difficultyScore = (hardCount * 3.0 + mediumCount) / totalReviews
+            val basePriority = (difficultyScore * 100).toInt()
+
+            // Add time-based boost for cards not reviewed recently
+            val daysSinceReview = lastReviewDate?.let {
+                (Instant.now().toEpochMilli() - it) / (24 * 60 * 60 * 1000)
+            } ?: 0
+
+            // Cards not seen in 30+ days get priority boost
+            val overdueBoost = when {
+                daysSinceReview > 60 -> 50  // 2+ months: significant boost
+                daysSinceReview > 30 -> 25  // 1+ month: moderate boost
+                else -> 0
+            }
+
+            return maxOf(1, basePriority + overdueBoost)
         }
     }
 }
@@ -56,10 +91,48 @@ data class CardInDeckAndDeckRelation(
         val storedToStudy = repository.getStudyDeck(deck.uuid, Instant.now().truncatedTo(ChronoUnit.DAYS))
         val resolvedToStudy: StudyDeckOfTheDay
         if (storedToStudy == null) {
-            // Take cards sorted by priority, then shuffle for random study order
-            val selectedCards = cardsInDeck
-                .sortedBy { it.cardInDeck.daysToNextShow }
-                .take(numCardsToStudy)
+            // Separate new cards from reviewed cards
+            val newCards = cardsInDeck.filter {
+                it.cardInDeck.easyCount == 0 &&
+                it.cardInDeck.mediumCount == 0 &&
+                it.cardInDeck.hardCount == 0
+            }
+            val reviewedCards = cardsInDeck.filter {
+                it.cardInDeck.easyCount > 0 ||
+                it.cardInDeck.mediumCount > 0 ||
+                it.cardInDeck.hardCount > 0
+            }
+
+            // Reserve slots for new cards (20% of total, minimum 10)
+            val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt())
+            val reviewCardSlots = numCardsToStudy - newCardSlots
+
+            // Select new cards (shuffled to avoid order memorization)
+            val selectedNewCards = newCards
+                .sortedByDescending { it.cardInDeck.priority }
+                .take(newCardSlots)
+                .shuffled()
+
+            // Select review cards by priority (shuffled within same bucket)
+            val selectedReviewCards = reviewedCards
+                .sortedByDescending { it.cardInDeck.priority }
+                .take(reviewCardSlots)
+                .shuffled()
+
+            // If we don't have enough new cards, fill remaining slots with review cards
+            val actualNewCards = selectedNewCards
+            val additionalReviewCards = if (selectedNewCards.size < newCardSlots) {
+                reviewedCards
+                    .sortedByDescending { it.cardInDeck.priority }
+                    .filter { it !in selectedReviewCards }
+                    .take(newCardSlots - selectedNewCards.size)
+                    .shuffled()
+            } else {
+                emptyList()
+            }
+
+            // Combine all selected cards
+            val selectedCards = (actualNewCards + selectedReviewCards + additionalReviewCards)
                 .shuffled()
 
             resolvedToStudy = StudyDeckOfTheDay(
@@ -123,7 +196,7 @@ data class CardInDeckWithCard(
             0,
             cardInDeck.deckId,
             Uuid.random(),
-            cardInDeck.daysToNextShow == 0,
+            cardInDeck.easyCount == 0 && cardInDeck.mediumCount == 0 && cardInDeck.hardCount == 0,
             null,
             sortOrder
         )

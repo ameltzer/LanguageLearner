@@ -19,7 +19,7 @@ import com.ameltz.languagelearner.data.entity.StudyDeck
 
 
 @Database(entities = [DeckSettings::class, Card::class, Deck::class, CardInDeck::class,
-    StudyDeck::class, StudyCard::class, Setting::class], version = 4)
+    StudyDeck::class, StudyCard::class, Setting::class], version = 6)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun deckDAO(): DeckDao

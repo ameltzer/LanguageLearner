@@ -59,19 +59,21 @@ class StudyViewModel @Inject constructor(val repository: Repository) : ViewModel
         println("[StudyViewModel] updateCurrentCard() called with difficulty: $difficulty for card ${currentCard.studyCardOfTheDay.uuid}")
         when (difficulty) {
             CardDifficulty.EASY -> {
-                println("[StudyViewModel] updateCurrentCard() -> marking card as learned")
+                println("[StudyViewModel] updateCurrentCard() -> marking card as learned, incrementing easy count")
                 currentCard.studyCardOfTheDay.learned = true
-                repository.updateCardInDeckNextDay(currentCard.studyCardOfTheDay.uuid)
+                repository.updateCardWithEasy(currentCard.studyCardOfTheDay.uuid)
             }
             CardDifficulty.MEDIUM -> {
                 val delay = repository.getMediumTimeDelay()
-                println("[StudyViewModel] updateCurrentCard() -> setting medium delay: $delay minutes")
+                println("[StudyViewModel] updateCurrentCard() -> setting medium delay: $delay minutes, incrementing medium count")
                 currentCard.studyCardOfTheDay.nextShowMinutes = delay
+                repository.updateCardWithMedium(currentCard.studyCardOfTheDay.uuid)
             }
             else -> {
                 val delay = repository.getHardTimeDelay()
-                println("[StudyViewModel] updateCurrentCard() -> setting hard delay: $delay minutes")
+                println("[StudyViewModel] updateCurrentCard() -> setting hard delay: $delay minutes, incrementing hard count")
                 currentCard.studyCardOfTheDay.nextShowMinutes = delay
+                repository.updateCardWithHard(currentCard.studyCardOfTheDay.uuid)
             }
         }
         currentCard.studyCardOfTheDay.lastAttempt = Instant.now().toEpochMilli()

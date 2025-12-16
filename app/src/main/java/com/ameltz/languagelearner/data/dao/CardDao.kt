@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.ameltz.languagelearner.data.entity.Card
@@ -20,6 +21,7 @@ interface CardDao {
     fun getCard(cardId: Uuid): Card?
 
     @Query("SELECT * FROM card WHERE uuid = :cardId")
+    @Transaction
     fun getCardWithDeck(cardId: Uuid): CardInDeckAndCardRelation?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

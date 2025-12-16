@@ -37,6 +37,10 @@ object DatabaseModule {
         return Room.databaseBuilder(context.applicationContext, AppDatabase::class.java,
             "AppDatabase")
             .allowMainThreadQueries()
+            .addMigrations(
+                com.ameltz.languagelearner.data.MIGRATION_4_5,
+                com.ameltz.languagelearner.data.MIGRATION_5_6
+            )
             .fallbackToDestructiveMigration()
             .build()
     }

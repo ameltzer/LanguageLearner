@@ -46,7 +46,9 @@ interface Repository {
 
     fun doesCardInDeckExist(cardInDeck: CardInDeck): Boolean
 
-    fun updateCardInDeckNextDay(studyCardId: Uuid)
+    fun updateCardWithEasy(studyCardId: Uuid)
+    fun updateCardWithMedium(studyCardId: Uuid)
+    fun updateCardWithHard(studyCardId: Uuid)
 
     fun deleteCardinDeck(cardInDeck: CardInDeck)
     fun deleteCardInDeck(cardId: Uuid, deckId: Uuid)

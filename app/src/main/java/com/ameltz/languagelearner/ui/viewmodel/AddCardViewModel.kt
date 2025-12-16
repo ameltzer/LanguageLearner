@@ -18,9 +18,13 @@ class AddCardViewModel @Inject constructor(val repository: Repository) : ViewMod
         val cardInDB = this.repository.upsertCard(card)
         val toInsert = cardInDecks.map { cardInDeck ->  CardInDeck(
             cardInDeck.uuid,
-            cardInDeck.daysToNextShow,
+            cardInDeck.priority,
+            cardInDeck.easyCount,
+            cardInDeck.mediumCount,
+            cardInDeck.hardCount,
             cardInDB.uuid,
-            cardInDeck.deckId
+            cardInDeck.deckId,
+            cardInDeck.lastReviewDate
             ) }
         this.repository.upsertAllCardInDecks(toInsert, true)
 

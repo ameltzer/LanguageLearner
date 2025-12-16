@@ -185,7 +185,7 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
                         nextShowMinutes = 0,
                         learned = false,
                         studyDeck = studyDeck.studyDeck.uuid,
-                        isNewCard = cardInDeck.daysToNextShow == 0,
+                        isNewCard = cardInDeck.easyCount == 0 && cardInDeck.mediumCount == 0 && cardInDeck.hardCount == 0,
                         lastAttempt = null,
                         sortOrder = maxOrder + 1 + index
                     )
@@ -205,11 +205,25 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     }
 
 
-    override fun updateCardInDeckNextDay(studyCardId: Uuid) {
-        println("[Repository] updateCardInDeckNextDay() called with studyCardId: $studyCardId")
+    override fun updateCardWithEasy(studyCardId: Uuid) {
+        println("[Repository] updateCardWithEasy() called with studyCardId: $studyCardId")
         val studyCard = studyCardDao.getCard(studyCardId)
-        cardInDecksDao.updateCardInDeckNextDay(studyCard!!.cardInDeckId)
-        println("[Repository] updateCardInDeckNextDay() -> completed")
+        cardInDecksDao.incrementEasyAndUpdatePriority(studyCard!!.cardInDeckId, Instant.now().toEpochMilli())
+        println("[Repository] updateCardWithEasy() -> completed")
+    }
+
+    override fun updateCardWithMedium(studyCardId: Uuid) {
+        println("[Repository] updateCardWithMedium() called with studyCardId: $studyCardId")
+        val studyCard = studyCardDao.getCard(studyCardId)
+        cardInDecksDao.incrementMediumAndUpdatePriority(studyCard!!.cardInDeckId, Instant.now().toEpochMilli())
+        println("[Repository] updateCardWithMedium() -> completed")
+    }
+
+    override fun updateCardWithHard(studyCardId: Uuid) {
+        println("[Repository] updateCardWithHard() called with studyCardId: $studyCardId")
+        val studyCard = studyCardDao.getCard(studyCardId)
+        cardInDecksDao.incrementHardAndUpdatePriority(studyCard!!.cardInDeckId, Instant.now().toEpochMilli())
+        println("[Repository] updateCardWithHard() -> completed")
     }
 
     override fun deleteCardinDeck(cardInDeck: CardInDeck) {
