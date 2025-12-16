@@ -1,5 +1,6 @@
 package com.ameltz.languagelearner.data.repository
 
+import com.ameltz.languagelearner.data.DeckDate
 import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeck
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
@@ -54,12 +55,11 @@ interface Repository {
     fun deleteCardInDeck(cardId: Uuid, deckId: Uuid)
 
 
-    fun getStudyDeck(deckId: Uuid, instant: Instant): StudyDeckWithCards?
+    fun getStudyDeck(deckId: Uuid, deckDate: DeckDate): StudyDeckWithCards?
     fun getStudyDeck(studyDeckId: Uuid): StudyDeckWithCards?
 
     fun isDeckDone(studyDeckId: Uuid): Boolean
 
-    fun doesStudyDeckExist(deckId: Uuid, instant: Instant): Boolean
 
     fun upsertStudyDeck(deck: StudyDeckWithCards)
 

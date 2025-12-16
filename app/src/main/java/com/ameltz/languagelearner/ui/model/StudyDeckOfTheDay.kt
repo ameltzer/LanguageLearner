@@ -1,29 +1,33 @@
 package com.ameltz.languagelearner.ui.model
 
+import com.ameltz.languagelearner.data.DeckDate
 import com.ameltz.languagelearner.data.entity.StudyCard
 import com.ameltz.languagelearner.data.entity.StudyCardWithCard
 import com.ameltz.languagelearner.data.entity.StudyDeck
 import com.ameltz.languagelearner.data.entity.StudyDeckWithCards
 import com.ameltz.languagelearner.data.repository.Repository
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlin.uuid.Uuid
 
 data class StudyDeckOfTheDay(val studyDeck: Uuid,
                              val deckId: Uuid,
                              var cards: List<StudyCardOfTheDay>,
                              val completed: Boolean,
-                             val date: Instant) {
+                             val date: DeckDate) {
     fun toStudyDeck(repository: Repository): StudyDeckWithCards {
         return StudyDeckWithCards(
             StudyDeck(
                 studyDeck,
                 deckId,
                 completed,
-                date.truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+                date.getEpochMilli()
             ),
             cards.map { it.toStudyCard(repository, studyDeck) },
         )
+    }
+
+    fun isTodaysDeck(): Boolean {
+        return date.isTodayEST()
     }
 }
 

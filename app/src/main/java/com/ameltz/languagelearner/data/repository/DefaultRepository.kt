@@ -1,5 +1,6 @@
 package com.ameltz.languagelearner.data.repository
 
+import com.ameltz.languagelearner.data.DeckDate
 import com.ameltz.languagelearner.data.dao.CardDao
 import com.ameltz.languagelearner.data.dao.CardInDeckDao
 import com.ameltz.languagelearner.data.dao.DeckDao
@@ -171,9 +172,9 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         val maxCardInStudyDeck = this.getNumCardsToStudy()
 
         // Add newly inserted cards to today's study deck if it exists
-        val today = Instant.now().truncatedTo(ChronoUnit.DAYS)
+        val today = DeckDate(Instant.now())
         toInsert.groupBy { it.deckId }.forEach { (deckId, cardsInDeck) ->
-            val studyDeck = studyDeckDao.getDeck(deckId, today.toEpochMilli())
+            val studyDeck = studyDeckDao.getDeck(deckId, today.getEpochMilli())
             if (studyDeck != null && studyDeck.cards.size < maxCardInStudyDeck) {
                 val numCardsToAdd = maxCardInStudyDeck - studyDeck.cards.size
                 println("[Repository] upsertAllCardInDecks() -> adding ${numCardsToAdd} cards to today's study deck for deck $deckId")
@@ -245,12 +246,12 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
 
     override fun getStudyDeck(
         deckId: Uuid,
-        instant: Instant
+        deckDate: DeckDate
     ): StudyDeckWithCards? {
-        println("[Repository] getStudyDeck(deckId, instant) called with deckId: $deckId, instant: $instant")
-        val studyDeck = studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli())
+        println("[Repository] getStudyDeck(deckId, deckDate) called with deckId: $deckId, deckDate: $deckDate")
+        val studyDeck = studyDeckDao.getDeck(deckId, deckDate.getEpochMilli())
         val result = processStudyDeck(studyDeck)
-        println("[Repository] getStudyDeck(deckId, instant) -> ${result?.cards?.size ?: 0} cards ready to study")
+        println("[Repository] getStudyDeck(deckId, deckDate) -> ${result?.cards?.size ?: 0} cards ready to study")
         return result
 
     }
@@ -289,16 +290,6 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
                     .map { card -> card.studyCardOfTheDay.learned }
                     .reduce { acc, isLearned -> acc && isLearned }
         println("[Repository] isDeckDone() -> $result")
-        return result
-    }
-
-    override fun doesStudyDeckExist(
-        deckId: Uuid,
-        instant: Instant
-    ): Boolean {
-        println("[Repository] doesStudyDeckExist() called with deckId: $deckId, instant: $instant")
-        val result = studyDeckDao.getDeck(deckId, instant.truncatedTo(ChronoUnit.DAYS).toEpochMilli()) != null
-        println("[Repository] doesStudyDeckExist() -> $result")
         return result
     }
 

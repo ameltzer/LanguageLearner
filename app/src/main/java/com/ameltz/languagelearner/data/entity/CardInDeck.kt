@@ -6,12 +6,12 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.ameltz.languagelearner.data.DeckDate
 import com.ameltz.languagelearner.data.repository.Repository
 import com.ameltz.languagelearner.ui.model.HomePageDeckModel
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
 import com.ameltz.languagelearner.ui.model.StudyDeckOfTheDay
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -138,7 +138,7 @@ data class CardInDeckAndDeckRelation(
             deck.uuid,
             selectedCards.mapIndexed { index, card -> card.toInitialStudyCard(index) },
             false,
-            Instant.now().truncatedTo(ChronoUnit.DAYS)
+            DeckDate.getToday()
         )
         repository.upsertStudyDeck(resolvedToStudy.toStudyDeck(repository))
         return resolvedToStudy
@@ -146,9 +146,9 @@ data class CardInDeckAndDeckRelation(
     fun generateStudyMaterial(toDeckManagement: () -> Unit,
                               numCardsToStudy: Int,
                               repository: Repository): Pair<HomePageDeckModel, StudyDeckOfTheDay> {
-        val storedToStudy = repository.getStudyDeck(deck.uuid, Instant.now().truncatedTo(ChronoUnit.DAYS))
+        val storedToStudy = repository.getStudyDeck(deck.uuid, DeckDate.getToday())
         val resolvedToStudy: StudyDeckOfTheDay
-        if (storedToStudy == null || storedToStudy.studyDeck.completed && !storedToStudy.isTodaysDeck()) {
+        if (storedToStudy == null || storedToStudy.studyDeck.completed && !storedToStudy.toStudyDeckOfTheDay().isTodaysDeck()) {
             resolvedToStudy = generateTodaysStudyMaterial(numCardsToStudy, repository)
         } else {
             resolvedToStudy = storedToStudy.toStudyDeckOfTheDay()

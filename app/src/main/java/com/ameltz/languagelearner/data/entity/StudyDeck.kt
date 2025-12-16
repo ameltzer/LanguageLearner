@@ -6,10 +6,10 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.ameltz.languagelearner.data.DeckDate
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
 import com.ameltz.languagelearner.ui.model.StudyDeckOfTheDay
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -41,11 +41,8 @@ data class StudyDeckWithCards(
         return StudyDeckOfTheDay(studyDeck.uuid, studyDeck.deckId,
             cards.sortedBy { it.studyCardOfTheDay.sortOrder }.map { it.toInitialStudyCard() },
             studyDeck.completed,
-            Instant.ofEpochMilli(studyDeck.date))
-    }
-
-    fun isTodaysDeck(): Boolean {
-        return Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli() == studyDeck.date
+            DeckDate(Instant.ofEpochMilli(studyDeck.date))
+        )
     }
 }
 
