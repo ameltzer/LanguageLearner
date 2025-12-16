@@ -356,6 +356,17 @@ fun DeckDisplay(
                             Icon(Icons.Default.Refresh, contentDescription = null)
                         }
                     )
+                    DropdownMenuItem(
+                        text = { Text("Delete Deck") },
+                        onClick = {
+                            showMenu = false
+                            homePageViewModel.deleteDeck(deck.deckId)
+                            onRefresh()
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                        }
+                    )
                 }
 
                 showHardDeckMessage?.let { message ->

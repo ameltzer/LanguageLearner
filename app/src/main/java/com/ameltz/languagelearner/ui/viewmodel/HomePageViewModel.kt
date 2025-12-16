@@ -46,4 +46,15 @@ class HomePageViewModel @Inject constructor(val repository: Repository) : ViewMo
         return deckName
     }
 
+    fun deleteDeck(deckId: Uuid) {
+        println("[HomePageViewModel] deleteDeck() called with deckId: $deckId")
+        val deck = repository.getDeck(deckId)
+        if (deck != null) {
+            repository.deleteDeck(deck)
+            println("[HomePageViewModel] deleteDeck() -> completed")
+        } else {
+            println("[HomePageViewModel] deleteDeck() -> deck not found")
+        }
+    }
+
 }
