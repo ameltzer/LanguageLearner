@@ -104,8 +104,10 @@ data class CardInDeckAndDeckRelation(
             }
 
             // Reserve slots for new cards (20% of total, minimum 10)
-            val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt())
+            val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt(), numCardsToStudy - reviewedCards.size)
             val reviewCardSlots = numCardsToStudy - newCardSlots
+
+           // if (reviewedCardsSlots + newCardSlots)
 
             // Select new cards (shuffled to avoid order memorization)
             val selectedNewCards = newCards

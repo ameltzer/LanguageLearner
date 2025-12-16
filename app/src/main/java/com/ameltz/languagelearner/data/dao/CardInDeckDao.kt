@@ -96,5 +96,15 @@ abstract class CardInDeckDao {
     """)
     abstract fun incrementHardAndUpdatePriority(cardInDeckId: Uuid, currentTime: Long)
 
+    @Query("""
+        SELECT * FROM CardInDeck
+        WHERE hardCount > 0
+        AND lastReviewDate IS NOT NULL
+        AND lastReviewDate >= :cutoffTime
+        AND deckId = :deckId
+    """)
+    @Transaction
+    abstract fun getCardsMarkedHardSince(cutoffTime: Long, deckId: Uuid): List<CardInDeckWithCard>
+
 
 }

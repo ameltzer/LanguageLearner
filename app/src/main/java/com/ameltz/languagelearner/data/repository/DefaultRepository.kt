@@ -375,4 +375,51 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         println("[Repository] saveNumCardsToStudy() -> completed")
     }
 
+    override fun getHardCardsLookbackDays(): Int {
+        println("[Repository] getHardCardsLookbackDays() called")
+        val setting = settingDao.getSetting(SettingsViewModel.HARD_CARDS_LOOKBACK_DAYS_KEY) ?: Setting(SettingsViewModel.HARD_CARDS_LOOKBACK_DAYS_KEY, "7")
+        val result = Integer.parseInt(setting.value)
+        println("[Repository] getHardCardsLookbackDays() -> $result days")
+        return result
+    }
+
+    override fun saveHardCardsLookbackDays(days: Int) {
+        println("[Repository] saveHardCardsLookbackDays() called with value: $days")
+        settingDao.upsertSetting(Setting(SettingsViewModel.HARD_CARDS_LOOKBACK_DAYS_KEY, days.toString()))
+        println("[Repository] saveHardCardsLookbackDays() -> completed")
+    }
+
+    override fun getCardsMarkedHardInLastXDays(days: Int, deckId: Uuid): List<CardInDeckWithCard> {
+        println("[Repository] getCardsMarkedHardInLastXDays() called with days: $days, deckId: $deckId")
+        val cutoffTime = Instant.now().minus(days.toLong(), ChronoUnit.DAYS).toEpochMilli()
+        val result = cardInDecksDao.getCardsMarkedHardSince(cutoffTime, deckId)
+        println("[Repository] getCardsMarkedHardInLastXDays() -> found ${result.size} cards")
+        return result
+    }
+
+    override fun createHardCardsDeck(deckName: String, lookbackDays: Int, sourceDeckId: Uuid): CardInDeckAndDeckRelation {
+        println("[Repository] createHardCardsDeck() called with deckName: $deckName, lookbackDays: $lookbackDays, sourceDeckId: $sourceDeckId")
+
+        // Get all cards marked hard in the last X days from the specific deck
+        val hardCards = getCardsMarkedHardInLastXDays(lookbackDays, sourceDeckId)
+        println("[Repository] createHardCardsDeck() -> found ${hardCards.size} hard cards")
+
+        // Create a new deck with a random deckSettingsId
+        val newDeck = Deck(Uuid.random(), deckName, Uuid.random())
+        deckDao.insertDeck(newDeck)
+        println("[Repository] createHardCardsDeck() -> created deck ${newDeck.uuid}")
+
+        // Add all hard cards to the new deck
+        val cardsToInsert = hardCards.map { hardCard ->
+            CardInDeck.createCardInDeck(hardCard.card.uuid, newDeck.uuid)
+        }
+        cardInDecksDao.upsertAll(cardsToInsert)
+        println("[Repository] createHardCardsDeck() -> added ${cardsToInsert.size} cards to deck")
+
+        // Return the deck with cards
+        val result = deckDao.get(newDeck.uuid)!!
+        println("[Repository] createHardCardsDeck() -> completed")
+        return result
+    }
+
 }

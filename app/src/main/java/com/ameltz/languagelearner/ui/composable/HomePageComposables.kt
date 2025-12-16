@@ -269,6 +269,7 @@ fun DeckDisplay(
         ) {
             items(decks) { deck ->
                 var showMenu by remember { mutableStateOf(false) }
+                var showHardDeckMessage by remember { mutableStateOf<String?>(null) }
 
                 Card(
                     modifier = Modifier
@@ -329,6 +330,22 @@ fun DeckDisplay(
                         }
                     )
                     DropdownMenuItem(
+                        text = { Text("Create Hard Cards Deck") },
+                        onClick = {
+                            showMenu = false
+                            val deckName = homePageViewModel.createHardCardsDeck(deck.deckId, deck.deckName)
+                            if (deckName != null) {
+                                showHardDeckMessage = "Created: $deckName"
+                                onRefresh()
+                            } else {
+                                showHardDeckMessage = "No hard cards found"
+                            }
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.AddCircle, contentDescription = null)
+                        }
+                    )
+                    DropdownMenuItem(
                         text = { Text("Reset Progress") },
                         onClick = {
                             showMenu = false
@@ -338,6 +355,15 @@ fun DeckDisplay(
                         leadingIcon = {
                             Icon(Icons.Default.Refresh, contentDescription = null)
                         }
+                    )
+                }
+
+                showHardDeckMessage?.let { message ->
+                    Text(
+                        text = message,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

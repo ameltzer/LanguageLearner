@@ -73,4 +73,9 @@ interface Repository {
     fun getNumCardsToStudy(): Int
     fun saveNumCardsToStudy(numCards: Int)
     fun upsertAllCardInDecks(cardInDecks: List<CardInDeck>, updateIfExists: Boolean)
+
+    fun getHardCardsLookbackDays(): Int
+    fun saveHardCardsLookbackDays(days: Int)
+    fun getCardsMarkedHardInLastXDays(days: Int, deckId: Uuid): List<CardInDeckWithCard>
+    fun createHardCardsDeck(deckName: String, lookbackDays: Int, sourceDeckId: Uuid): CardInDeckAndDeckRelation
 }

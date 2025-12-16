@@ -30,4 +30,20 @@ class HomePageViewModel @Inject constructor(val repository: Repository) : ViewMo
         println("[HomePageViewModel] resetDeckForStudy() -> completed")
     }
 
+    fun createHardCardsDeck(sourceDeckId: Uuid, sourceDeckName: String): String? {
+        println("[HomePageViewModel] createHardCardsDeck() called with sourceDeckId: $sourceDeckId")
+        val lookbackDays = repository.getHardCardsLookbackDays()
+        val hardCards = repository.getCardsMarkedHardInLastXDays(lookbackDays, sourceDeckId)
+
+        if (hardCards.isEmpty()) {
+            println("[HomePageViewModel] createHardCardsDeck() -> no hard cards found")
+            return null
+        }
+
+        val deckName = "$sourceDeckName - Hard Cards (Last $lookbackDays Days)"
+        repository.createHardCardsDeck(deckName, lookbackDays, sourceDeckId)
+        println("[HomePageViewModel] createHardCardsDeck() -> created deck: $deckName")
+        return deckName
+    }
+
 }
