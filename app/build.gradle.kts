@@ -19,7 +19,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
+        ksp {
+            arg("dagger.hilt.android.internal.disableAndroidSuperclassValidation", "true")
+        }
 
     }
 

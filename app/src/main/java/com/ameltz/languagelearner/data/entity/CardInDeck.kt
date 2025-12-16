@@ -85,66 +85,71 @@ data class CardInDeckAndDeckRelation(
     )
     val cardsInDeck: List<CardInDeckWithCard>
 ) {
+
+    private fun generateTodaysStudyMaterial(numCardsToStudy: Int,
+                                            repository: Repository): StudyDeckOfTheDay {
+        val newCards = cardsInDeck.filter {
+            it.cardInDeck.easyCount == 0 &&
+                    it.cardInDeck.mediumCount == 0 &&
+                    it.cardInDeck.hardCount == 0
+        }
+        val reviewedCards = cardsInDeck.filter {
+            it.cardInDeck.easyCount > 0 ||
+                    it.cardInDeck.mediumCount > 0 ||
+                    it.cardInDeck.hardCount > 0
+        }
+
+        // Reserve slots for new cards (20% of total, minimum 10)
+        val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt(), numCardsToStudy - reviewedCards.size)
+        val reviewCardSlots = numCardsToStudy - newCardSlots
+
+        // if (reviewedCardsSlots + newCardSlots)
+
+        // Select new cards (shuffled to avoid order memorization)
+        val selectedNewCards = newCards
+            .sortedByDescending { it.cardInDeck.priority }
+            .take(newCardSlots)
+            .shuffled()
+
+        // Select review cards by priority (shuffled within same bucket)
+        val selectedReviewCards = reviewedCards
+            .sortedByDescending { it.cardInDeck.priority }
+            .take(reviewCardSlots)
+            .shuffled()
+
+        // If we don't have enough new cards, fill remaining slots with review cards
+        val actualNewCards = selectedNewCards
+        val additionalReviewCards = if (selectedNewCards.size < newCardSlots) {
+            reviewedCards
+                .sortedByDescending { it.cardInDeck.priority }
+                .filter { it !in selectedReviewCards }
+                .take(newCardSlots - selectedNewCards.size)
+                .shuffled()
+        } else {
+            emptyList()
+        }
+
+        // Combine all selected cards
+        val selectedCards = (actualNewCards + selectedReviewCards + additionalReviewCards)
+            .shuffled()
+
+        val resolvedToStudy = StudyDeckOfTheDay(
+            Uuid.random(),
+            deck.uuid,
+            selectedCards.mapIndexed { index, card -> card.toInitialStudyCard(index) },
+            false,
+            Instant.now().truncatedTo(ChronoUnit.DAYS)
+        )
+        repository.upsertStudyDeck(resolvedToStudy.toStudyDeck(repository))
+        return resolvedToStudy
+    }
     fun generateStudyMaterial(toDeckManagement: () -> Unit,
                               numCardsToStudy: Int,
                               repository: Repository): Pair<HomePageDeckModel, StudyDeckOfTheDay> {
         val storedToStudy = repository.getStudyDeck(deck.uuid, Instant.now().truncatedTo(ChronoUnit.DAYS))
         val resolvedToStudy: StudyDeckOfTheDay
-        if (storedToStudy == null) {
-            // Separate new cards from reviewed cards
-            val newCards = cardsInDeck.filter {
-                it.cardInDeck.easyCount == 0 &&
-                it.cardInDeck.mediumCount == 0 &&
-                it.cardInDeck.hardCount == 0
-            }
-            val reviewedCards = cardsInDeck.filter {
-                it.cardInDeck.easyCount > 0 ||
-                it.cardInDeck.mediumCount > 0 ||
-                it.cardInDeck.hardCount > 0
-            }
-
-            // Reserve slots for new cards (20% of total, minimum 10)
-            val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt(), numCardsToStudy - reviewedCards.size)
-            val reviewCardSlots = numCardsToStudy - newCardSlots
-
-           // if (reviewedCardsSlots + newCardSlots)
-
-            // Select new cards (shuffled to avoid order memorization)
-            val selectedNewCards = newCards
-                .sortedByDescending { it.cardInDeck.priority }
-                .take(newCardSlots)
-                .shuffled()
-
-            // Select review cards by priority (shuffled within same bucket)
-            val selectedReviewCards = reviewedCards
-                .sortedByDescending { it.cardInDeck.priority }
-                .take(reviewCardSlots)
-                .shuffled()
-
-            // If we don't have enough new cards, fill remaining slots with review cards
-            val actualNewCards = selectedNewCards
-            val additionalReviewCards = if (selectedNewCards.size < newCardSlots) {
-                reviewedCards
-                    .sortedByDescending { it.cardInDeck.priority }
-                    .filter { it !in selectedReviewCards }
-                    .take(newCardSlots - selectedNewCards.size)
-                    .shuffled()
-            } else {
-                emptyList()
-            }
-
-            // Combine all selected cards
-            val selectedCards = (actualNewCards + selectedReviewCards + additionalReviewCards)
-                .shuffled()
-
-            resolvedToStudy = StudyDeckOfTheDay(
-                Uuid.random(),
-                deck.uuid,
-                selectedCards.mapIndexed { index, card -> card.toInitialStudyCard(index) },
-                false,
-                Instant.now().truncatedTo(ChronoUnit.DAYS)
-            )
-            repository.upsertStudyDeck(resolvedToStudy.toStudyDeck(repository))
+        if (storedToStudy == null || storedToStudy.studyDeck.completed && !storedToStudy.isTodaysDeck()) {
+            resolvedToStudy = generateTodaysStudyMaterial(numCardsToStudy, repository)
         } else {
             resolvedToStudy = storedToStudy.toStudyDeckOfTheDay()
         }

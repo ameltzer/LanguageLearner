@@ -9,6 +9,7 @@ import androidx.room.Relation
 import com.ameltz.languagelearner.ui.model.StudyCardOfTheDay
 import com.ameltz.languagelearner.ui.model.StudyDeckOfTheDay
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -41,6 +42,10 @@ data class StudyDeckWithCards(
             cards.sortedBy { it.studyCardOfTheDay.sortOrder }.map { it.toInitialStudyCard() },
             studyDeck.completed,
             Instant.ofEpochMilli(studyDeck.date))
+    }
+
+    fun isTodaysDeck(): Boolean {
+        return Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli() == studyDeck.date
     }
 }
 
