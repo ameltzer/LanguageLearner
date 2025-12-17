@@ -4,14 +4,14 @@ import java.time.Instant
 import java.time.ZoneId
 
 data class DeckDate(val deckDate: Instant) {
-
+    val estTimeZone:ZoneId = ZoneId.of("America/New_York")
     fun getEpochMilli(): Long {
-        return this.deckDate.toEpochMilli()
+        return this.deckDate.atZone(estTimeZone).toLocalDate().atStartOfDay(estTimeZone).toInstant().toEpochMilli()
     }
 
     fun isTodayEST(): Boolean {
-        val now = Instant.now().atZone(ZoneId.of("America/New_York")).toLocalDate()
-        val deckDateInEST = this.deckDate.atZone(ZoneId.of("America/New_York")).toLocalDate()
+        val now = Instant.now().atZone(estTimeZone).toLocalDate()
+        val deckDateInEST = this.deckDate.atZone(estTimeZone).toLocalDate()
         return now.equals(deckDateInEST)
     }
   companion object {
