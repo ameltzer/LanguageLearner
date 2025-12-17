@@ -380,6 +380,20 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         println("[Repository] saveHardCardsLookbackDays() -> completed")
     }
 
+    override fun getNewCardPercentage(): Int {
+        println("[Repository] getNewCardPercentage() called")
+        val setting = settingDao.getSetting(SettingsViewModel.NEW_CARD_PERCENTAGE_KEY) ?: Setting(SettingsViewModel.NEW_CARD_PERCENTAGE_KEY, "20")
+        val result = Integer.parseInt(setting.value)
+        println("[Repository] getNewCardPercentage() -> $result%")
+        return result
+    }
+
+    override fun saveNewCardPercentage(percentage: Int) {
+        println("[Repository] saveNewCardPercentage() called with value: $percentage")
+        settingDao.upsertSetting(Setting(SettingsViewModel.NEW_CARD_PERCENTAGE_KEY, percentage.toString()))
+        println("[Repository] saveNewCardPercentage() -> completed")
+    }
+
     override fun getCardsMarkedHardInLastXDays(days: Int, deckId: Uuid): List<CardInDeckWithCard> {
         println("[Repository] getCardsMarkedHardInLastXDays() called with days: $days, deckId: $deckId")
         val cutoffTime = Instant.now().minus(days.toLong(), ChronoUnit.DAYS).toEpochMilli()

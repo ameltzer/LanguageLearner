@@ -78,4 +78,6 @@ interface Repository {
     fun saveHardCardsLookbackDays(days: Int)
     fun getCardsMarkedHardInLastXDays(days: Int, deckId: Uuid): List<CardInDeckWithCard>
     fun createHardCardsDeck(deckName: String, lookbackDays: Int, sourceDeckId: Uuid): CardInDeckAndDeckRelation
+    fun getNewCardPercentage(): Int
+    fun saveNewCardPercentage(percentage: Int)
 }

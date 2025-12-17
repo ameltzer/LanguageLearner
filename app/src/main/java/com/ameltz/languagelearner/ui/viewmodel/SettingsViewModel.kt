@@ -14,6 +14,7 @@ class SettingsViewModel @Inject constructor(val repository: Repository) : ViewMo
         const val HARD_TIME_DELAY_KEY = "hard_time_delay"
         const val NUM_CARDS_TO_STUDY_KEY = "num_cards_to_study"
         const val HARD_CARDS_LOOKBACK_DAYS_KEY = "hard_cards_lookback_days"
+        const val NEW_CARD_PERCENTAGE_KEY = "new_card_percentage"
     }
 
     fun getMediumTimeDelay(): Int {
@@ -46,6 +47,14 @@ class SettingsViewModel @Inject constructor(val repository: Repository) : ViewMo
 
     fun saveHardCardsLookbackDays(days: Int) {
         repository.saveHardCardsLookbackDays(days)
+    }
+
+    fun getNewCardPercentage(): Int {
+        return repository.getNewCardPercentage()
+    }
+
+    fun saveNewCardPercentage(percentage: Int) {
+        repository.saveNewCardPercentage(percentage)
     }
 
 }

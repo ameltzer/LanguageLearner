@@ -44,6 +44,18 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
         mutableStateOf(TextFieldValue(settingsViewModel.getHardTimeDelay().toString()))
     }
 
+    var newCardPercentage by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(settingsViewModel.getNewCardPercentage().toString()))
+    }
+
+    var numCardsToStudy by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(settingsViewModel.getNumCardsToStudy().toString()))
+    }
+
+    var hardCardsLookbackDays by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(settingsViewModel.getHardCardsLookbackDays().toString()))
+    }
+
     LanguageLearnerTheme {
         Scaffold(
             topBar = {
@@ -116,6 +128,45 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
                                 Text("Time before showing a 'hard' difficulty card again")
                             }
                         )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = newCardPercentage,
+                            onValueChange = { newCardPercentage = it },
+                            label = { Text("New cards percentage (%)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            supportingText = {
+                                Text("Percentage of daily cards that should be new (minimum 10 cards)")
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = numCardsToStudy,
+                            onValueChange = { numCardsToStudy = it },
+                            label = { Text("Number of cards to study") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            supportingText = {
+                                Text("Total number of cards in each daily study session")
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = hardCardsLookbackDays,
+                            onValueChange = { hardCardsLookbackDays = it },
+                            label = { Text("Hard cards lookback (days)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            supportingText = {
+                                Text("Number of days to look back when creating hard cards deck")
+                            }
+                        )
                     }
                 }
 
@@ -131,11 +182,26 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
                         if (hardValue != null) {
                             settingsViewModel.saveHardTimeDelay(hardValue)
                         }
+                        val newCardPercentageValue = newCardPercentage.text.toIntOrNull()
+                        if (newCardPercentageValue != null) {
+                            settingsViewModel.saveNewCardPercentage(newCardPercentageValue)
+                        }
+                        val numCardsToStudyValue = numCardsToStudy.text.toIntOrNull()
+                        if (numCardsToStudyValue != null) {
+                            settingsViewModel.saveNumCardsToStudy(numCardsToStudyValue)
+                        }
+                        val hardCardsLookbackDaysValue = hardCardsLookbackDays.text.toIntOrNull()
+                        if (hardCardsLookbackDaysValue != null) {
+                            settingsViewModel.saveHardCardsLookbackDays(hardCardsLookbackDaysValue)
+                        }
                         toHomePage()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = mediumTimeDelay.text.toIntOrNull() != null &&
-                            hardTimeDelay.text.toIntOrNull() != null
+                            hardTimeDelay.text.toIntOrNull() != null &&
+                            newCardPercentage.text.toIntOrNull() != null &&
+                            numCardsToStudy.text.toIntOrNull() != null &&
+                            hardCardsLookbackDays.text.toIntOrNull() != null
                 ) {
                     Text("Save Settings")
                 }

@@ -99,8 +99,9 @@ data class CardInDeckAndDeckRelation(
                     it.cardInDeck.hardCount > 0
         }
 
-        // Reserve slots for new cards (20% of total, minimum 10)
-        val newCardSlots = maxOf(10, (numCardsToStudy * 0.2).toInt(), numCardsToStudy - reviewedCards.size)
+        // Reserve slots for new cards (configurable % of total, minimum 10)
+        val newCardPercentage = repository.getNewCardPercentage() / 100.0
+        val newCardSlots = maxOf(10, (numCardsToStudy * newCardPercentage).toInt(), numCardsToStudy - reviewedCards.size)
         val reviewCardSlots = numCardsToStudy - newCardSlots
 
         // if (reviewedCardsSlots + newCardSlots)
