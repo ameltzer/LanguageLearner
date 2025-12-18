@@ -99,9 +99,9 @@ fun NavControllerGraph(
                 toNewDeck={navController.navigate(NewDeck)},
                 homePageViewModel = homePageViewModel,
                 toManageDeck = {deckId -> navController.navigate(ManageDeck(deckId))},
-                toCardManagement = {navController.navigate(CardManagement)},
+                toCardManagement = {navController.navigate(CardsManagement)},
                 bulkImportViewModel=bulkImportViewModel,
-                toStudyDeck = {studyDeckId -> navController.navigate(com.ameltz.languagelearner.ui.navigation.StudyDeck(studyDeckId))},
+                toStudyDeck = {studyDeckId -> navController.navigate(StudyDeck(studyDeckId))},
                 toSettings = {navController.navigate(Settings)}
             )
         }
@@ -112,11 +112,12 @@ fun NavControllerGraph(
             val args = backStackEntry.toRoute<ManageDeck>()
             DeckManagement(deckManagementViewModel, args.deckId,
                 {navController.popBackStack()},
-                {deckId -> navController.navigate(AssociateCardsToDeck(deckId))}
+                {deckId -> navController.navigate(AssociateCardsToDeck(deckId))},
+                {cardId: Uuid -> navController.navigate(CardManagement(cardId))}
             )
         }
-        composable<AddCard>(typeMap = mapOf(typeOf<Uuid?>() to UuidOptionalNavType)) { backStackEntry ->
-            val args = backStackEntry.toRoute<AddCard>()
+        composable<CardManagement>(typeMap = mapOf(typeOf<Uuid?>() to UuidOptionalNavType)) { backStackEntry ->
+            val args = backStackEntry.toRoute<CardManagement>()
             CardManagementComposable(addCardViewModel,
                 { navController.navigate(LanguageLearnerHomePage)},
                 args.cardId
@@ -128,17 +129,18 @@ fun NavControllerGraph(
             AddCardsToDeck(args.deckId, cardManagementViewModel, {navController.navigate(LanguageLearnerHomePage)},
                 )
         }
-        composable<CardManagement> {
+        composable<CardsManagement> {
             CardsManagement(cardsManagementViewModel, {navController.navigate(LanguageLearnerHomePage)},
-                {cardId: Uuid -> navController.navigate(AddCard(cardId))},
-                {navController.navigate(AddCard())})
+                {cardId: Uuid -> navController.navigate(CardManagement(cardId))},
+                {navController.navigate(CardManagement())})
         }
         composable<StudyDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<StudyDeck>()
             StudyScreen(
                 studyDeckId = args.studyDeckId,
                 studyViewModel = studyViewModel,
-                onNavigateBack = { navController.navigate(LanguageLearnerHomePage) }
+                onNavigateBack = { navController.navigate(LanguageLearnerHomePage) },
+                onEditCard = { cardId -> navController.navigate(CardManagement(cardId)) }
             )
         }
         composable<Settings> {

@@ -55,7 +55,8 @@ fun DeckManagement(
     deckManagementViewModel: DeckManagementViewModel,
     deckId: Uuid,
     toHomePage: () -> Unit,
-    toCardCreation: (deckId: Uuid) -> Unit
+    toCardCreation: (deckId: Uuid) -> Unit,
+    toCard: (cardId: Uuid) -> Unit
 ) {
     val deck = deckManagementViewModel.getDeck(deckId)
     val contextCardInDeck: MutableState<CardInDeckWithCard?> = rememberSaveable {
@@ -65,12 +66,24 @@ fun DeckManagement(
         mutableStateOf(TextFieldValue(deck?.deck?.name ?: ""))
     }
     var sortOption by remember { mutableStateOf(SortOption.NONE) }
+    var searchQuery by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
 
     val sortedCards = deck?.cardsInDeck?.let { cards ->
-        when (sortOption) {
+        val sorted = when (sortOption) {
             SortOption.BY_FRONT -> cards.sortedBy { it.card.front }
             SortOption.BY_BACK -> cards.sortedBy { it.card.back }
             SortOption.NONE -> cards
+        }
+
+        if (searchQuery.text.isNotBlank()) {
+            sorted.filter { cardInDeck ->
+                cardInDeck.card.front.contains(searchQuery.text, ignoreCase = true) ||
+                cardInDeck.card.back.contains(searchQuery.text, ignoreCase = true)
+            }
+        } else {
+            sorted
         }
     }
 
@@ -196,6 +209,25 @@ fun DeckManagement(
                     )
                 }
 
+                // Search bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search cards") },
+                    placeholder = { Text("Search by front or back text...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    trailingIcon = {
+                        if (searchQuery.text.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = TextFieldValue("") }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                            }
+                        }
+                    },
+                    singleLine = true
+                )
+
                 // Cards list
                 if (sortedCards.isNullOrEmpty()) {
                     Column(
@@ -228,7 +260,7 @@ fun DeckManagement(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .combinedClickable(
-                                        onClick = { },
+                                        onClick = { toCard(cardInDeck.card.uuid) },
                                         onLongClick = { contextCardInDeck.value = cardInDeck }
                                     ),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

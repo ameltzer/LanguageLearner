@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,7 +44,8 @@ import kotlin.uuid.Uuid
 fun StudyScreen(
     studyDeckId: Uuid,
     studyViewModel: StudyViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onEditCard: (Uuid) -> Unit
 ) {
     val studyDeck = studyViewModel.loadStudyDeck(studyDeckId)
 
@@ -67,6 +69,21 @@ fun StudyScreen(
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back"
                             )
+                        }
+                    },
+                    actions = {
+                        if (studyDeck.cards.isNotEmpty() && !studyViewModel.isDone(studyDeckId)) {
+                            IconButton(
+                                onClick = {
+                                    val currentCard = studyDeck.cards[studyViewModel.currentCardIndex]
+                                    onEditCard(currentCard.cardInDeck.card.uuid)
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit Card"
+                                )
+                            }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
