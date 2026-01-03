@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,6 +58,7 @@ fun AddCardsToDeck(
     var isLoading by remember { mutableStateOf(true) }
     var displayName by remember { mutableStateOf("Deck Name") }
     var sortOption by remember { mutableStateOf(SortOption.NONE) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(deckId) {
         val deck = cardManagementViewModel.getDeck(deckId)
@@ -188,13 +190,17 @@ fun AddCardsToDeck(
                 // Save button
                 Button(
                     onClick = {
-                        cardManagementViewModel.addCardsToDeck(
-                            deckId,
-                            selectedItems.map { it.uuid })
-                        val cardsToRemove =
-                            items.filter { !selectedItems.contains(it) }.map { it.uuid }
-                        cardManagementViewModel.removeCardsFromDeck(deckId, cardsToRemove)
-                        back()
+                        try {
+                            cardManagementViewModel.addCardsToDeck(
+                                deckId,
+                                selectedItems.map { it.uuid })
+                            val cardsToRemove =
+                                items.filter { !selectedItems.contains(it) }.map { it.uuid }
+                            cardManagementViewModel.removeCardsFromDeck(deckId, cardsToRemove)
+                            back()
+                        } catch (e: Exception) {
+                            errorMessage = "Failed to save changes: ${e.message}"
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -206,6 +212,20 @@ fun AddCardsToDeck(
                 }
             }
         }
+    }
+
+    // Error dialog
+    errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Error") },
+            text = { Text(message) },
+            confirmButton = {
+                Button(onClick = { errorMessage = null }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
 
