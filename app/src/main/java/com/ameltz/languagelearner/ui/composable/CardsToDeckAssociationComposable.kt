@@ -81,8 +81,13 @@ fun AddCardsToDeck(
     }
 
     val sortedItems = when (sortOption) {
-        SortOption.BY_FRONT -> items.sortedBy { it.front }
-        SortOption.BY_BACK -> items.sortedBy { it.back }
+        SortOption.BY_FRONT -> items.sortedBy { it.front.lowercase() }
+        SortOption.BY_BACK -> items.sortedBy { it.back.lowercase() }
+        SortOption.BY_ENGLISH -> items.sortedBy { card ->
+            val latinCharCountFront = card.front.count { it.code in 0..127 }
+            val englishText = if (latinCharCountFront > card.front.length / 2) card.front else card.back
+            englishText.lowercase()
+        }
         SortOption.NONE -> items
     }
 

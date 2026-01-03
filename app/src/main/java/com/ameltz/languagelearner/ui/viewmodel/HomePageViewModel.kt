@@ -3,6 +3,7 @@ package com.ameltz.languagelearner.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import com.ameltz.languagelearner.data.repository.Repository
 import com.ameltz.languagelearner.ui.model.HomePageDeckModel
+import com.ameltz.languagelearner.ui.model.StudyDeckCardView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.uuid.Uuid
@@ -55,6 +56,63 @@ class HomePageViewModel @Inject constructor(val repository: Repository) : ViewMo
         } else {
             println("[HomePageViewModel] deleteDeck() -> deck not found")
         }
+    }
+
+    fun getFullStudyDeckCards(studyDeckId: Uuid): List<StudyDeckCardView> {
+        println("[HomePageViewModel] getStudyDeckCards() called with studyDeckId: $studyDeckId")
+        val studyDeck = repository.getFullStudyDeck(studyDeckId)
+        if (studyDeck == null) {
+            println("[HomePageViewModel] getStudyDeckCards() -> study deck not found")
+            return emptyList()
+        }
+
+        val cards = studyDeck.cards.map { studyCardWithCard ->
+            StudyDeckCardView(
+                front = studyCardWithCard.cardInDeck.card.front,
+                back = studyCardWithCard.cardInDeck.card.back,
+                easyCount = studyCardWithCard.cardInDeck.cardInDeck.easyCount,
+                mediumCount = studyCardWithCard.cardInDeck.cardInDeck.mediumCount,
+                hardCount = studyCardWithCard.cardInDeck.cardInDeck.hardCount,
+                isLearned = studyCardWithCard.studyCardOfTheDay.learned
+            )
+        }
+
+        // Sort: unfinished cards first, then alphabetically by front
+        val sortedCards = cards.sortedWith(
+            compareBy<StudyDeckCardView> { it.isLearned }
+                .thenBy { it.front }
+        )
+
+        println("[HomePageViewModel] getStudyDeckCards() -> returning ${sortedCards.size} cards")
+        return sortedCards
+    }
+    fun getStudyDeckCards(studyDeckId: Uuid): List<StudyDeckCardView> {
+        println("[HomePageViewModel] getStudyDeckCards() called with studyDeckId: $studyDeckId")
+        val studyDeck = repository.getStudyDeck(studyDeckId)
+        if (studyDeck == null) {
+            println("[HomePageViewModel] getStudyDeckCards() -> study deck not found")
+            return emptyList()
+        }
+
+        val cards = studyDeck.cards.map { studyCardWithCard ->
+            StudyDeckCardView(
+                front = studyCardWithCard.cardInDeck.card.front,
+                back = studyCardWithCard.cardInDeck.card.back,
+                easyCount = studyCardWithCard.cardInDeck.cardInDeck.easyCount,
+                mediumCount = studyCardWithCard.cardInDeck.cardInDeck.mediumCount,
+                hardCount = studyCardWithCard.cardInDeck.cardInDeck.hardCount,
+                isLearned = studyCardWithCard.studyCardOfTheDay.learned
+            )
+        }
+
+        // Sort: unfinished cards first, then alphabetically by front
+        val sortedCards = cards.sortedWith(
+            compareBy<StudyDeckCardView> { it.isLearned }
+                .thenBy { it.front }
+        )
+
+        println("[HomePageViewModel] getStudyDeckCards() -> returning ${sortedCards.size} cards")
+        return sortedCards
     }
 
 }

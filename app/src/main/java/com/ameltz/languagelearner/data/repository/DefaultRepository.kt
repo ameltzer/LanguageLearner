@@ -81,15 +81,10 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
 
     // Card operations
     override fun upsertCard(card: Card): Card {
-        println("[Repository] upsertCard() called with front: '${card.front}', back: '${card.back}'")
-        val existingCard = this.cardDao.getCard(card.front, card.back)
-        if(existingCard != null) {
-            println("[Repository] upsertCard() -> card already exists, returning existing card ${existingCard.uuid}")
-            return existingCard
-        }
+        println("[Repository] upsertCard() called with front: '${card.front}', back: '${card.back}' ${card.uuid}")
         cardDao.upsertCard(card)
         println("[Repository] upsertCard() -> inserted new card ${card.uuid}")
-        return card
+        return cardDao.getCard(card.front, card.back)!!
     }
 
 
@@ -262,6 +257,13 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         val result = processStudyDeck(studyDeck)
         println("[Repository] getStudyDeck(studyDeckId) -> ${result?.cards?.size ?: 0} cards ready to study")
         return result
+    }
+
+    override fun getFullStudyDeck(studyDeckId: Uuid): StudyDeckWithCards? {
+        println("[Repository] getStudyDeck(studyDeckId) called with studyDeckId: $studyDeckId")
+        val studyDeck = studyDeckDao.getDeck(studyDeckId)
+        println("[Repository] getStudyDeck(studyDeckId) -> ${studyDeck?.cards?.size ?: 0} cards ready to study")
+        return studyDeck
     }
 
     private fun processStudyDeck(studyDeck: StudyDeckWithCards?): StudyDeckWithCards? {

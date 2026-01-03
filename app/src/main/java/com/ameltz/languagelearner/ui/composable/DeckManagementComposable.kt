@@ -72,8 +72,14 @@ fun DeckManagement(
 
     val sortedCards = deck?.cardsInDeck?.let { cards ->
         val sorted = when (sortOption) {
-            SortOption.BY_FRONT -> cards.sortedBy { it.card.front }
-            SortOption.BY_BACK -> cards.sortedBy { it.card.back }
+            SortOption.BY_FRONT -> cards.sortedBy { it.card.front.lowercase() }
+            SortOption.BY_BACK -> cards.sortedBy { it.card.back.lowercase() }
+            SortOption.BY_ENGLISH -> cards.sortedBy { cardInDeck ->
+                val card = cardInDeck.card
+                val latinCharCountFront = card.front.count { it.code in 0..127 }
+                val englishText = if (latinCharCountFront > card.front.length / 2) card.front else card.back
+                englishText.lowercase()
+            }
             SortOption.NONE -> cards
         }
 

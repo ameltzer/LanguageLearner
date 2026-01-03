@@ -57,6 +57,7 @@ interface Repository {
 
     fun getStudyDeck(deckId: Uuid, deckDate: DeckDate): StudyDeckWithCards?
     fun getStudyDeck(studyDeckId: Uuid): StudyDeckWithCards?
+    fun getFullStudyDeck(studyDeckId: Uuid): StudyDeckWithCards?
 
     fun isDeckDone(studyDeckId: Uuid): Boolean
 

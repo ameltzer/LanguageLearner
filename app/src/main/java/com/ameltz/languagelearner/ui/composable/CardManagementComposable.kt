@@ -1,5 +1,6 @@
 package com.ameltz.languagelearner.ui.composable
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,10 +25,12 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -73,6 +76,8 @@ fun CardManagementComposable(
     }
 
     var sortOption by remember { mutableStateOf(DeckSortOption.NONE) }
+
+    var showDuplicateCardDialog by remember { mutableStateOf(false) }
 
     val decksSelected = remember {
         mutableStateListOf(
@@ -236,7 +241,12 @@ fun CardManagementComposable(
                                             deck.uuid
                                         )
                                     }
-                                addCardViewModel.addCard(cardInDecks, card)
+                                try {
+                                    addCardViewModel.addCard(cardInDecks, card)
+                                } catch (ex: SQLiteConstraintException) {
+                                    showDuplicateCardDialog = true
+                                    return@Button
+                                }
                             }
                             if (!decksNotSelected.isEmpty() && cardId != null) {
                                 addCardViewModel.deleteCardInDecks(cardId, decksNotSelected)
@@ -264,6 +274,20 @@ fun CardManagementComposable(
                     }
                 }
             }
+        }
+
+        // Duplicate card warning dialog
+        if (showDuplicateCardDialog) {
+            AlertDialog(
+                onDismissRequest = { showDuplicateCardDialog = false },
+                title = { Text("Duplicate Card") },
+                text = { Text("A card with this front and back already exists. Please modify the card content to make it unique.") },
+                confirmButton = {
+                    TextButton(onClick = { showDuplicateCardDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
         }
     }
 }
