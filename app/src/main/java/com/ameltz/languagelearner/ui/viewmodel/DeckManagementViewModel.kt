@@ -26,4 +26,10 @@ class DeckManagementViewModel @Inject constructor(val repository: Repository) : 
     fun saveDeck(deck: Deck) {
         repository.updateDeck(deck)
     }
+
+    fun exportDeckToTSV(deck: CardInDeckAndDeckRelation): String {
+        return deck.cardsInDeck.joinToString("\n") { cardInDeck ->
+            "${cardInDeck.card.front}\t${cardInDeck.card.back}"
+        }
+    }
 }
