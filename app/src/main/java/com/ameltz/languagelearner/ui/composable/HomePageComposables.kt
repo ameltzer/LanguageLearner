@@ -233,22 +233,6 @@ fun TopBanner(
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Import")
         }
-        FilledTonalButton(
-            onClick = toWordExtraction
-        ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.padding(4.dp))
-            Text("Extract")
-        }
-        VoiceCardCreationButton(
-            viewModel = voiceCardCreationViewModel,
-            apiKey = settingsViewModel.getAnthropicApiKey(),
-            onSuccess = onRefresh
-        )
     }
 }
 
