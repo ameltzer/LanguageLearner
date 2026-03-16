@@ -86,6 +86,14 @@ class HomePageViewModel @Inject constructor(val repository: Repository) : ViewMo
         println("[HomePageViewModel] getStudyDeckCards() -> returning ${sortedCards.size} cards")
         return sortedCards
     }
+    fun exportAllDecksToTSV(): String {
+        return repository.getAllDecks().joinToString("\n") { deck ->
+            "# ${deck.deck.name}\n" + deck.cardsInDeck.joinToString("\n") { cardInDeck ->
+                "${cardInDeck.card.front.replace("\n", ",")}\t${cardInDeck.card.back.replace("\n", ",")}"
+            }
+        }
+    }
+
     fun getStudyDeckCards(studyDeckId: Uuid): List<StudyDeckCardView> {
         println("[HomePageViewModel] getStudyDeckCards() called with studyDeckId: $studyDeckId")
         val studyDeck = repository.getStudyDeck(studyDeckId)

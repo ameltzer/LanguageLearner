@@ -126,7 +126,7 @@ fun NavControllerGraph(
         composable<CardManagement>(typeMap = mapOf(typeOf<Uuid?>() to UuidOptionalNavType)) { backStackEntry ->
             val args = backStackEntry.toRoute<CardManagement>()
             CardManagementComposable(addCardViewModel,
-                { navController.navigate(LanguageLearnerHomePage)},
+                { navController.popBackStack() },
                 args.cardId,
                 args.deckId
             )

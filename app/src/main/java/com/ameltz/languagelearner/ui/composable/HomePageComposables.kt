@@ -1,6 +1,9 @@
 package com.ameltz.languagelearner.ui.composable
 
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.combinedClickable
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -65,6 +69,9 @@ import com.ameltz.languagelearner.ui.model.HomePageDeckModel
 import com.ameltz.languagelearner.ui.theme.LanguageLearnerTheme
 import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.collections.forEach
@@ -144,7 +151,7 @@ fun HomePage(
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    TopBanner(toCardManagement, bulkImportViewModel, onRefresh, toWordExtraction, voiceCardCreationViewModel, settingsViewModel)
+                    TopBanner(toCardManagement, bulkImportViewModel, homePageViewModel, onRefresh, toWordExtraction, voiceCardCreationViewModel, settingsViewModel)
                     DeckDisplay(decks, toStudyDeck, homePageViewModel, onRefresh, toAddCardForDeck)
                 }
             }
@@ -156,6 +163,7 @@ fun HomePage(
 fun TopBanner(
     toCardManagement: () -> Unit,
     bulkImportViewModel: BulkImportViewModel,
+    homePageViewModel: HomePageViewModel,
     onRefresh: () -> Unit,
     toWordExtraction: () -> Unit,
     voiceCardCreationViewModel: com.ameltz.languagelearner.ui.viewmodel.VoiceCardCreationViewModel,
@@ -208,6 +216,53 @@ fun TopBanner(
         }
     }
 
+    val importAllPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                context.contentResolver.openInputStream(it)?.use { inputStream ->
+                    BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                        val content = reader.readText()
+                        bulkImportViewModel.importAllDecks(content)
+                    }
+                }
+                onRefresh()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    val exportAllLauncher = rememberLauncherForActivityResult(
+        contract = object : ActivityResultContracts.CreateDocument("text/tab-separated-values") {
+            override fun createIntent(context: android.content.Context, input: String): Intent {
+                val intent = super.createIntent(context, input)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    try {
+                        val driveAuthority = "com.google.android.apps.docs.storage"
+                        val driveRootUri = Uri.parse("content://$driveAuthority/document/acc%3D1%3Bdoc%3Droot")
+                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, driveRootUri)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                return intent
+            }
+        }
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                val exportContent = homePageViewModel.exportAllDecksToTSV()
+                context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(exportContent.toByteArray())
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,6 +287,23 @@ fun TopBanner(
             )
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Import")
+        }
+        FilledTonalButton(
+            onClick = {
+                val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                exportAllLauncher.launch("all_decks_$dateStr.tsv")
+            }
+        ) {
+            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text("Export All")
+        }
+        FilledTonalButton(
+            onClick = { importAllPicker.launch("*/*") }
+        ) {
+            Icon(Icons.Default.AddCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text("Import All")
         }
     }
 }

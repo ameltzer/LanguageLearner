@@ -29,7 +29,7 @@ class DeckManagementViewModel @Inject constructor(val repository: Repository) : 
 
     fun exportDeckToTSV(deck: CardInDeckAndDeckRelation): String {
         return deck.cardsInDeck.joinToString("\n") { cardInDeck ->
-            "${cardInDeck.card.front}\t${cardInDeck.card.back}"
+            "${cardInDeck.card.front.replace("\n", ",")}\t${cardInDeck.card.back.replace("\n",",")}"
         }
     }
 }
