@@ -117,4 +117,10 @@ dependencies {
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+
+    // OkHttp for API calls
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }

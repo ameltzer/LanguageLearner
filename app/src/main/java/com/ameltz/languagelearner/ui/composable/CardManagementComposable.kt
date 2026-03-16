@@ -62,7 +62,8 @@ enum class DeckSortOption {
 fun CardManagementComposable(
     addCardViewModel: AddCardViewModel,
     onBack: () -> Unit,
-    cardId: Uuid? = null
+    cardId: Uuid? = null,
+    deckId: Uuid? = null
 ) {
     val decks = addCardViewModel.getAllDecks().map { deck -> deck.deck }
     val card = addCardViewModel.getCard(cardId)
@@ -84,8 +85,16 @@ fun CardManagementComposable(
             *decks.map { deck ->
                 CheckboxItem(
                     deck.name,
-                    isSelected = (card?.instancesOfCard?.any { cardInDeck -> cardInDeck.deckId == deck.uuid }
-                        ?: false),
+                    isSelected = if (cardId != null) {
+                        // Editing existing card - select decks the card is already in
+                        card?.instancesOfCard?.any { cardInDeck -> cardInDeck.deckId == deck.uuid } ?: false
+                    } else if (deckId != null) {
+                        // Creating new card from a specific deck - pre-select that deck
+                        deck.uuid == deckId
+                    } else {
+                        // Creating new card without a specific deck - don't pre-select anything
+                        false
+                    },
                     deck.uuid
                 )
             }.toTypedArray()

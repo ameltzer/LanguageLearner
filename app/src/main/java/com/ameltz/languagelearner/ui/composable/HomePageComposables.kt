@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -81,7 +82,11 @@ fun HomePage(
     toCardManagement: () -> Unit,
     bulkImportViewModel: BulkImportViewModel,
     toStudyDeck: (studyDeckId: Uuid) -> Unit,
-    toSettings: () -> Unit
+    toSettings: () -> Unit,
+    toAddCardForDeck: (deckId: Uuid) -> Unit,
+    toWordExtraction: () -> Unit,
+    voiceCardCreationViewModel: com.ameltz.languagelearner.ui.viewmodel.VoiceCardCreationViewModel,
+    settingsViewModel: com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     var decks by remember { mutableStateOf(homePageViewModel.getAllDeckSummaries(toManageDeck)) }
@@ -139,8 +144,8 @@ fun HomePage(
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    TopBanner(toCardManagement, bulkImportViewModel, onRefresh)
-                    DeckDisplay(decks, toStudyDeck, homePageViewModel, onRefresh)
+                    TopBanner(toCardManagement, bulkImportViewModel, onRefresh, toWordExtraction, voiceCardCreationViewModel, settingsViewModel)
+                    DeckDisplay(decks, toStudyDeck, homePageViewModel, onRefresh, toAddCardForDeck)
                 }
             }
         }
@@ -151,7 +156,10 @@ fun HomePage(
 fun TopBanner(
     toCardManagement: () -> Unit,
     bulkImportViewModel: BulkImportViewModel,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    toWordExtraction: () -> Unit,
+    voiceCardCreationViewModel: com.ameltz.languagelearner.ui.viewmodel.VoiceCardCreationViewModel,
+    settingsViewModel: com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 ) {
     var fileContent by remember { mutableStateOf<String?>(null) }
     var deckName by remember { mutableStateOf<String?>(null) }
@@ -200,23 +208,22 @@ fun TopBanner(
         }
     }
 
-    Row(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         FilledTonalButton(
-            onClick = toCardManagement,
-            modifier = Modifier.weight(1f)
+            onClick = toCardManagement
         ) {
             Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Cards")
         }
         FilledTonalButton(
-            onClick = { filePicker.launch("*/*") },
-            modifier = Modifier.weight(1f)
+            onClick = { filePicker.launch("*/*") }
         ) {
             Icon(
                 Icons.Default.AddCircle,
@@ -226,6 +233,22 @@ fun TopBanner(
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Import")
         }
+        FilledTonalButton(
+            onClick = toWordExtraction
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
+            Text("Extract")
+        }
+        VoiceCardCreationButton(
+            viewModel = voiceCardCreationViewModel,
+            apiKey = settingsViewModel.getAnthropicApiKey(),
+            onSuccess = onRefresh
+        )
     }
 }
 
@@ -234,7 +257,8 @@ fun DeckDisplay(
     decks: List<HomePageDeckModel>,
     toStudyDeck: (studyDeckId: Uuid) -> Unit,
     homePageViewModel: HomePageViewModel,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    toAddCardForDeck: (deckId: Uuid) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
 
@@ -324,6 +348,16 @@ fun DeckDisplay(
                         },
                         leadingIcon = {
                             Icon(Icons.Default.Edit, contentDescription = null)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Add Card") },
+                        onClick = {
+                            showMenu = false
+                            toAddCardForDeck(deck.deckId)
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Add, contentDescription = null)
                         }
                     )
                     DropdownMenuItem(

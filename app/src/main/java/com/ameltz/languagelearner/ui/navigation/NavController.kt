@@ -17,6 +17,7 @@ import com.ameltz.languagelearner.ui.composable.DeckManagement
 import com.ameltz.languagelearner.ui.composable.HomePage
 import com.ameltz.languagelearner.ui.composable.SettingsPage
 import com.ameltz.languagelearner.ui.composable.StudyScreen
+import com.ameltz.languagelearner.ui.composable.WordExtractionReviewScreen
 import com.ameltz.languagelearner.ui.viewmodel.AddCardViewModel
 import com.ameltz.languagelearner.ui.viewmodel.BulkImportViewModel
 import com.ameltz.languagelearner.ui.viewmodel.CardManagementViewModel
@@ -86,7 +87,9 @@ fun NavControllerGraph(
     cardsManagementViewModel: CardsManagementViewModel,
     bulkImportViewModel: BulkImportViewModel,
     studyViewModel: com.ameltz.languagelearner.ui.viewmodel.StudyViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    wordExtractionViewModel: com.ameltz.languagelearner.ui.viewmodel.WordExtractionViewModel,
+    voiceCardCreationViewModel: com.ameltz.languagelearner.ui.viewmodel.VoiceCardCreationViewModel
 ) {
 
     NavHost(
@@ -102,7 +105,11 @@ fun NavControllerGraph(
                 toCardManagement = {navController.navigate(CardsManagement)},
                 bulkImportViewModel=bulkImportViewModel,
                 toStudyDeck = {studyDeckId -> navController.navigate(StudyDeck(studyDeckId))},
-                toSettings = {navController.navigate(Settings)}
+                toSettings = {navController.navigate(Settings)},
+                toAddCardForDeck = {deckId -> navController.navigate(CardManagement(cardId = null, deckId = deckId))},
+                toWordExtraction = {navController.navigate(WordExtraction)},
+                voiceCardCreationViewModel = voiceCardCreationViewModel,
+                settingsViewModel = settingsViewModel
             )
         }
         composable<NewDeck> {
@@ -120,8 +127,8 @@ fun NavControllerGraph(
             val args = backStackEntry.toRoute<CardManagement>()
             CardManagementComposable(addCardViewModel,
                 { navController.navigate(LanguageLearnerHomePage)},
-                args.cardId
-
+                args.cardId,
+                args.deckId
             )
         }
         composable<AssociateCardsToDeck>(typeMap = mapOf(typeOf<Uuid>() to UuidNavType)) { backStackEntry ->
@@ -147,6 +154,14 @@ fun NavControllerGraph(
             SettingsPage(
                 toHomePage = { navController.navigate(LanguageLearnerHomePage) },
                 settingsViewModel = settingsViewModel
+            )
+        }
+        composable<WordExtraction> {
+            WordExtractionReviewScreen(
+                wordExtractionViewModel = wordExtractionViewModel,
+                homePageViewModel = homePageViewModel,
+                apiKey = settingsViewModel.getAnthropicApiKey(),
+                onNavigateBack = { navController.navigate(LanguageLearnerHomePage) }
             )
         }
     }

@@ -10,7 +10,7 @@ object NewDeck
 @Serializable
 data class ManageDeck (val deckId:Uuid)
 @Serializable
-data class CardManagement(val cardId:Uuid?=null)
+data class CardManagement(val cardId:Uuid?=null, val deckId:Uuid?=null)
 @Serializable
 data class AssociateCardsToDeck(val deckId:Uuid)
 @Serializable
@@ -19,3 +19,5 @@ object CardsManagement
 data class StudyDeck(val studyDeckId: Uuid)
 @Serializable
 object Settings
+@Serializable
+object WordExtraction

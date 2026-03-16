@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -56,6 +58,10 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
         mutableStateOf(TextFieldValue(settingsViewModel.getHardCardsLookbackDays().toString()))
     }
 
+    var anthropicApiKey by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(settingsViewModel.getAnthropicApiKey()))
+    }
+
     LanguageLearnerTheme {
         Scaffold(
             topBar = {
@@ -85,6 +91,7 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
                 Text(
@@ -170,6 +177,38 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
                     }
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "API Settings",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Claude Vision API",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        OutlinedTextField(
+                            value = anthropicApiKey,
+                            onValueChange = { anthropicApiKey = it },
+                            label = { Text("Anthropic API Key") },
+                            modifier = Modifier.fillMaxWidth(),
+                            supportingText = {
+                                Text("API key for Claude Vision word extraction feature")
+                            }
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
@@ -193,6 +232,10 @@ fun SettingsPage(toHomePage: () -> Unit, settingsViewModel: SettingsViewModel) {
                         val hardCardsLookbackDaysValue = hardCardsLookbackDays.text.toIntOrNull()
                         if (hardCardsLookbackDaysValue != null) {
                             settingsViewModel.saveHardCardsLookbackDays(hardCardsLookbackDaysValue)
+                        }
+                        val anthropicApiKeyValue = anthropicApiKey.text
+                        if (anthropicApiKeyValue.isNotBlank()) {
+                            settingsViewModel.saveAnthropicApiKey(anthropicApiKeyValue)
                         }
                         toHomePage()
                     },

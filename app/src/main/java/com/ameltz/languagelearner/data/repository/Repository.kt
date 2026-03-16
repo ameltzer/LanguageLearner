@@ -81,4 +81,6 @@ interface Repository {
     fun createHardCardsDeck(deckName: String, lookbackDays: Int, sourceDeckId: Uuid): CardInDeckAndDeckRelation
     fun getNewCardPercentage(): Int
     fun saveNewCardPercentage(percentage: Int)
+    fun getAnthropicApiKey(): String
+    fun saveAnthropicApiKey(apiKey: String)
 }

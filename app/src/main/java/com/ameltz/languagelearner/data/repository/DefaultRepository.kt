@@ -429,4 +429,17 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         return result
     }
 
+    override fun getAnthropicApiKey(): String {
+        println("[Repository] getAnthropicApiKey() called")
+        val setting = settingDao.getSetting("anthropic_api_key")
+            ?: Setting("anthropic_api_key", "")
+        return setting.value
+    }
+
+    override fun saveAnthropicApiKey(apiKey: String) {
+        println("[Repository] saveAnthropicApiKey() called")
+        settingDao.upsertSetting(Setting("anthropic_api_key", apiKey))
+        println("[Repository] saveAnthropicApiKey() -> completed")
+    }
+
 }

@@ -16,6 +16,8 @@ import com.ameltz.languagelearner.ui.viewmodel.HomePageViewModel
 import com.ameltz.languagelearner.ui.viewmodel.NewDeckViewModel
 import com.ameltz.languagelearner.ui.viewmodel.SettingsViewModel
 import com.ameltz.languagelearner.ui.viewmodel.StudyViewModel
+import com.ameltz.languagelearner.ui.viewmodel.VoiceCardCreationViewModel
+import com.ameltz.languagelearner.ui.viewmodel.WordExtractionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -31,6 +33,8 @@ class MainActivity @Inject constructor(): ComponentActivity() {
     private val bulkImportViewModel: BulkImportViewModel by viewModels()
     private val studyViewModel: StudyViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val wordExtractionViewModel: WordExtractionViewModel by viewModels()
+    private val voiceCardCreationViewModel: VoiceCardCreationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +45,8 @@ class MainActivity @Inject constructor(): ComponentActivity() {
                     deckManagementViewModel = deckManagementViewModel, addCardViewModel = addCardViewModel,
                     cardManagementViewModel = cardManagementViewModel, cardsManagementViewModel = cardsManagementViewModel,
                     bulkImportViewModel=bulkImportViewModel, studyViewModel = studyViewModel,
-                    settingsViewModel = settingsViewModel)
+                    settingsViewModel = settingsViewModel, wordExtractionViewModel = wordExtractionViewModel,
+                    voiceCardCreationViewModel = voiceCardCreationViewModel)
             }
         }
     }
