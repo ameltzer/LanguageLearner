@@ -48,7 +48,11 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
 
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE Card ADD COLUMN categorization TEXT NOT NULL DEFAULT ''")
+        try {
+            db.execSQL("ALTER TABLE Card ADD COLUMN categorization TEXT NOT NULL DEFAULT ''")
+        } catch (_: Exception) {
+            // Column already exists
+        }
     }
 }
 
