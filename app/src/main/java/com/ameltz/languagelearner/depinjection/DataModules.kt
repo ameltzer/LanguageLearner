@@ -39,7 +39,9 @@ object DatabaseModule {
             .allowMainThreadQueries()
             .addMigrations(
                 com.ameltz.languagelearner.data.MIGRATION_4_5,
-                com.ameltz.languagelearner.data.MIGRATION_5_6
+                com.ameltz.languagelearner.data.MIGRATION_5_6,
+                com.ameltz.languagelearner.data.MIGRATION_6_7,
+                com.ameltz.languagelearner.data.MIGRATION_7_8
             )
             .fallbackToDestructiveMigration()
             .build()

@@ -128,7 +128,7 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     }
 
     override fun getAllCards(): List<Card> {
-        println("[Repository] getAllCards() called")
+        println("[Repository] abc getAllCards() called")
         val result = cardDao.getAllCards()
         println("[Repository] getAllCards() -> returned ${result.size} cards")
         return result

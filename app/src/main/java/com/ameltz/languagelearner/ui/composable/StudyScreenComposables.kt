@@ -161,6 +161,7 @@ fun StudyScreen(
                             FlashCard(
                                 front = currentCard.cardInDeck.card.front,
                                 back = currentCard.cardInDeck.card.back,
+                                categorization = currentCard.cardInDeck.card.categorization,
                                 isFlipped = studyViewModel.isFlipped,
                                 onCardClick = { studyViewModel.flipCard() },
                                 onDifficultySelected = { difficulty ->
@@ -184,6 +185,7 @@ fun StudyScreen(
 fun FlashCard(
     front: String,
     back: String,
+    categorization: List<String>,
     isFlipped: Boolean,
     onCardClick: () -> Unit,
     onDifficultySelected: (CardDifficulty) -> Unit
@@ -207,13 +209,26 @@ fun FlashCard(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isFlipped) back else front,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp)
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = if (isFlipped) back else front,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontSize = 32.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(24.dp)
+                    )
+                    if (isFlipped && categorization.isNotEmpty()) {
+                        Text(
+                            text = categorization.joinToString(", "),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+                }
             }
         }
 

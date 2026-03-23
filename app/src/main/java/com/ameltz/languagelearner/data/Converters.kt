@@ -37,4 +37,14 @@ class Converters {
     fun toStudyCards(value: String): List<StudyCardWithCard> {
         return Json.decodeFromString<List<StudyCardWithCard>>(value)
     }
+
+    @TypeConverter
+    fun fromStringList(list: List<String>): String {
+        return Json.encodeToString(list)
+    }
+
+    @TypeConverter
+    fun toStringList(value: String): List<String> {
+        return Json.decodeFromString(value)
+    }
 }

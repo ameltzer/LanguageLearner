@@ -9,7 +9,8 @@ import kotlin.uuid.Uuid
 data class Card(
     @PrimaryKey val uuid: Uuid,
     val front: String,
-    val back: String
+    val back: String,
+    val categorization: List<String> = emptyList()
 ) {
     fun display(): String {
         return "$front - $back"
