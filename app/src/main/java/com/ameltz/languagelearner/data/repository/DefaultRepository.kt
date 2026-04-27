@@ -82,9 +82,26 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
     // Card operations
     override fun upsertCard(card: Card): Card {
         println("[Repository] upsertCard() called with front: '${card.front}', back: '${card.back}' ${card.uuid}")
+        val existingById = cardDao.getCard(card.uuid)
+        if (existingById != null) {
+            // Card already exists — update it (front/back may have changed)
+            val merged = (existingById.categorization + card.categorization).distinct()
+            cardDao.update(card.copy(categorization = merged))
+            println("[Repository] upsertCard() -> updated card ${card.uuid}")
+            return cardDao.getCard(card.uuid)!!
+        }
         cardDao.upsertCard(card)
-        println("[Repository] upsertCard() -> inserted new card ${card.uuid}")
-        return cardDao.getCard(card.front, card.back)!!
+        val existing = cardDao.getCard(card.front, card.back)!!
+        if (card.categorization.isNotEmpty()) {
+            val merged = (existing.categorization + card.categorization).distinct()
+            if (merged != existing.categorization) {
+                cardDao.update(existing.copy(categorization = merged))
+                println("[Repository] upsertCard() -> merged categorizations into existing card ${existing.uuid}")
+                return cardDao.getCard(card.front, card.back)!!
+            }
+        }
+        println("[Repository] upsertCard() -> inserted card ${existing.uuid}")
+        return existing
     }
 
 
@@ -273,10 +290,12 @@ class DefaultRepository @Inject constructor(val deckDao: DeckDao,
         val originalSize = studyDeck.cards.size
         studyDeck.cards = studyDeck.cards.filter { card ->
             val nextShowTime = if(card.studyCardOfTheDay.lastAttempt != null) {(card.studyCardOfTheDay.nextShowMinutes * (60 * 1000) + card.studyCardOfTheDay.lastAttempt!!) } else { null }
+            val hardButNeverEasy = card.cardInDeck.cardInDeck.hardCount > 0 && card.cardInDeck.cardInDeck.easyCount == 0
             !card.studyCardOfTheDay.learned &&
                     (
                             nextShowTime == null ||
-                                    Instant.now().toEpochMilli() > nextShowTime
+                                    Instant.now().toEpochMilli() > nextShowTime ||
+                                    hardButNeverEasy
                             )
         }
         println("[Repository] processStudyDeck() -> filtered from $originalSize to ${studyDeck.cards.size} cards")

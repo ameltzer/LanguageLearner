@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.room.Upsert
 import com.ameltz.languagelearner.data.entity.Card
 import com.ameltz.languagelearner.data.entity.CardInDeckAndCardRelation
 import kotlin.uuid.Uuid
@@ -33,8 +32,11 @@ interface CardDao {
     @Query("DELETE FROM Card WHERE uuid = :cardId")
     fun delete(cardId: Uuid)
 
-    @Upsert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun upsertCard(card: Card)
+
+    @Update
+    fun update(card: Card)
 
     @Query("SELECT * FROM card")
     fun getAllCards(): List<Card>

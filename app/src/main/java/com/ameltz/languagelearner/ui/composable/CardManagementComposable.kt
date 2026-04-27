@@ -1,8 +1,11 @@
 package com.ameltz.languagelearner.ui.composable
 
 import android.database.sqlite.SQLiteConstraintException
+import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
@@ -34,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.ameltz.languagelearner.data.entity.Card
@@ -57,7 +65,7 @@ enum class DeckSortOption {
     BY_NAME
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CardManagementComposable(
     addCardViewModel: AddCardViewModel,
@@ -76,9 +84,19 @@ fun CardManagementComposable(
         mutableStateOf(TextFieldValue(card?.card?.back ?: ""))
     }
 
+    val categorization = remember {
+        mutableStateListOf(*(card?.card?.categorization ?: emptyList<String>()).toTypedArray())
+    }
+
+    var newCategory by remember { mutableStateOf("") }
+
     var sortOption by remember { mutableStateOf(DeckSortOption.NONE) }
 
     var showDuplicateCardDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val tts = remember { TextToSpeech(context) { } }
+    DisposableEffect(Unit) { onDispose { tts.shutdown() } }
 
     val decksSelected = remember {
         mutableStateListOf(
@@ -149,7 +167,15 @@ fun CardManagementComposable(
                         label = { Text("Front of card") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = false,
-                        minLines = 2
+                        minLines = 2,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                tts.language = detectLocale(front.text)
+                                tts.speak(front.text, TextToSpeech.QUEUE_FLUSH, null, null)
+                            }) {
+                                Icon(Icons.Default.Check, contentDescription = "Speak front")
+                            }
+                        }
                     )
                     OutlinedTextField(
                         value = back,
@@ -157,8 +183,64 @@ fun CardManagementComposable(
                         label = { Text("Back of card") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = false,
-                        minLines = 2
+                        minLines = 2,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                tts.language = detectLocale(back.text)
+                                tts.speak(back.text, TextToSpeech.QUEUE_FLUSH, null, null)
+                            }) {
+                                Icon(Icons.Default.Check, contentDescription = "Speak back")
+                            }
+                        }
                     )
+
+                    // Categorization
+                    Text(
+                        text = "Categories",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        categorization.forEachIndexed { index, category ->
+                            InputChip(
+                                selected = false,
+                                onClick = {},
+                                label = { Text(category) },
+                                trailingIcon = {
+                                    IconButton(onClick = { categorization.removeAt(index) }) {
+                                        Icon(
+                                            Icons.Default.Clear,
+                                            contentDescription = "Remove $category"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = newCategory,
+                            onValueChange = { newCategory = it },
+                            label = { Text("New category") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true
+                        )
+                        IconButton(
+                            onClick = {
+                                val trimmed = newCategory.trim()
+                                if (trimmed.isNotEmpty() && !categorization.contains(trimmed)) {
+                                    categorization.add(trimmed)
+                                }
+                                newCategory = ""
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Add category")
+                        }
+                    }
                 }
 
                 // Deck selection header
@@ -242,7 +324,7 @@ fun CardManagementComposable(
                             val decksNotSelected = decksSelected.filter { !it.isSelected }.map { it.deckId }
                             if (!decksSelectedIds.isEmpty()) {
                                 val selectedDecks = decks.filter { decksSelectedIds.contains(it.uuid) }
-                                val card = Card(card?.card?.uuid ?: Uuid.random(), front.text, back.text)
+                                val card = Card(card?.card?.uuid ?: Uuid.random(), front.text, back.text, categorization.toList())
                                 val cardInDecks =
                                     selectedDecks.map { deck ->
                                         CardInDeck.createCardInDeck(

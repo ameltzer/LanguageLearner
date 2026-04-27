@@ -24,7 +24,8 @@ class BulkImportViewModel @Inject constructor(val repository: Repository) : View
             } else if (currentDeckName != null) {
                 val parts = line.split("\t")
                 if (parts.size >= 2) {
-                    deckMap[currentDeckName!!]!!.add(AnkiCard(parts[0], parts[1]))
+                    val categorization = if (parts.size >= 3) parts[2].split(",").map { it.trim() }.filter { it.isNotEmpty() } else emptyList()
+                    deckMap[currentDeckName!!]!!.add(AnkiCard(parts[0], parts[1], categorization))
                 }
             }
         }
